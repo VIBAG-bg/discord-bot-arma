@@ -1,0 +1,8 @@
+# Discord.py library for Discord bot functionality
+discord.py>=2.3.2
+
+# Python-dotenv for environment variable management
+python-dotenv>=1.0.0
+
+# Asyncio support
+aiohttp>=3.9.4
