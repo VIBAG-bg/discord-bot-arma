@@ -16,7 +16,7 @@ class Config:
     TOKEN = os.getenv('DISCORD_TOKEN')
     
     # Command Prefix
-    PREFIX = os.getenv('COMMAND_PREFIX', '/')
+    PREFIX = os.getenv('COMMAND_PREFIX', '!')
     
     # Bot Owner ID
     OWNER_ID = os.getenv('OWNER_ID')
