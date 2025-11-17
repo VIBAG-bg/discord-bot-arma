@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 
+from discord import Member
+
 from .db import SessionLocal
 from .models import User
 
@@ -44,3 +46,15 @@ def link_steam(discord_id: int, steam_id: str) -> None:
             db.add(user)
         else:
             user.steam_id = steam_id
+
+
+def update_discord_profile(member: Member) -> None:
+    """Синхронизируем username / display_name с БД."""
+    with get_session() as db:
+        user = db.query(User).filter_by(discord_id=member.id).first()
+        if user is None:
+            user = User(discord_id=member.id)
+            db.add(user)
+
+        user.username = member.name               # глобальный логин
+        user.display_name = member.display_name   # ник на сервере

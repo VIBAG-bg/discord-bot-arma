@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 
 from config import Config
-from database.service import link_steam, set_language, get_or_create_user
+from database.service import link_steam, set_language, get_or_create_user, update_discord_profile
 
 
 # ------------ LOCALIZATION ------------
@@ -67,7 +67,7 @@ class SteamLinkModal(discord.ui.Modal):
 
         self.steam_id_input = discord.ui.TextInput(
             label="Your Steam ID / SteamID64",
-            placeholder="Example: 7656119XXXXXXXXXX",
+            placeholder="Example: 76561XXXXX",
             max_length=32,
             required=True,
         )
@@ -286,8 +286,8 @@ class LanguageSelectView(discord.ui.View):
         super().__init__(timeout=900)
         self.bot = bot_client
         self.guild_id = guild_id
-        self.add_item(LanguageButton("en", "🇬🇧 English"))
-        self.add_item(LanguageButton("ru", "🇷🇺 Русский"))
+        self.add_item(LanguageButton("en", "English"))
+        self.add_item(LanguageButton("ru", "Русский"))
 
 
 class LanguageButton(discord.ui.Button):
@@ -340,7 +340,7 @@ def _format_role_list() -> str:
 def _build_onboarding_message(member: discord.Member, lang: str) -> str:
     return (
         f"{t(lang, 'greeting').format(name=member.display_name)}\n\n"
-        f"{Config.WELCOME_MESSAGE}\n\n"
+        f"{Config.WELCOME_MESSAGE_ENG if lang == 'en' else Config.WELCOME_MESSAGE_RUS}\n\n"
         f"{t(lang, 'roles_header')}\n"
         f"{_format_role_list()}\n\n"
         f"{t(lang, 'roles_hint')}\n\n"
@@ -377,6 +377,9 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
     try:
         # создаём пользователя, если ещё нет
         get_or_create_user(member.id)
+
+        # сразу сохраняем юзернейм и ник
+        update_discord_profile(member)
 
         # первое сообщение: выбор языка
         # текст двухязычный, чтобы все поняли хотя бы что происходит

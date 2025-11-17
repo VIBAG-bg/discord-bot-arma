@@ -19,13 +19,23 @@ class Config:
     )
 
     # Welcome/onboarding text used in DM greeting
-    WELCOME_MESSAGE: str = os.getenv(
+    WELCOME_MESSAGE_ENG: str = os.getenv(
         "WELCOME_MESSAGE",
         (
             "Welcome to the ARMA 3 tactical community. We focus on coordination, "
             "discipline, and joint operations. Before we deploy, please choose your roles "
             "and register as a recruit so the staff can learn your interests and prepare "
             "you for upcoming missions."
+        ),
+    )
+
+    WELCOME_MESSAGE_RUS: str = os.getenv(
+        "WELCOME_MESSAGE_RUS",
+        (
+            "Добро пожаловать в тактическое сообщество ARMA 3. "
+            "Мы уделяем особое внимание координации, дисциплине и совместным операциям. "
+            "Перед началом выберите свои роли и зарегистрируйтесь в качестве новобранца, "
+            "чтобы персонал мог узнать о ваших интересах и подготовить вас к предстоящим миссиям."
         ),
     )
 
