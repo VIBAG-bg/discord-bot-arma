@@ -35,7 +35,7 @@ async def on_ready():
     print("------")
 
     # Register UI View globally (persistent across restarts)
-    bot.add_view(RoleSelectionView(bot_client=bot))
+    #bot.add_view(RoleSelectionView(bot_client=bot))
 
     await bot.change_presence(
         activity=discord.Game(name=f"{Config.PREFIX}help | ARMA 3")

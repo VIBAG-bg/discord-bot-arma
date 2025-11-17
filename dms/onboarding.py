@@ -7,11 +7,12 @@ from config import Config
 class RoleSelectionView(discord.ui.View):
     """Interactive role selection + recruit registration view."""
 
-    def __init__(self, bot_client: commands.Bot):
+    def __init__(self, bot_client: commands.Bot, guild_id: int):
         super().__init__(timeout=3600)
         self.bot = bot_client
+        self.guild_id = guild_id
 
-        # Generate role buttons dynamically
+        # Role buttons
         for role_cfg in Config.ROLE_DEFINITIONS:
             self.add_item(RoleButton(role_cfg))
 
@@ -34,6 +35,16 @@ class RoleButton(discord.ui.Button):
         self.role_cfg = role_cfg
 
     async def callback(self, interaction: discord.Interaction):
+        # Берём guild из view, а не из interaction (в DM его нет)
+        view: RoleSelectionView = self.view  # type: ignore[assignment]
+        guild = view.bot.get_guild(view.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                "Server not found. Contact staff.",
+                delete_after=20
+            )
+            return
+
         role_id = self.role_cfg.get("id")
         if not role_id:
             await interaction.response.send_message(
@@ -42,16 +53,8 @@ class RoleButton(discord.ui.Button):
             )
             return
 
-        guild = interaction.guild
-        if not guild:
-            await interaction.response.send_message(
-                "I cannot detect the server. Try again later.",
-                delete_after=20
-            )
-            return
-
         member = guild.get_member(interaction.user.id)
-        if not member:
+        if member is None:
             await interaction.response.send_message(
                 "Cannot find your account on this server.",
                 delete_after=20
@@ -97,10 +100,11 @@ class RegisterRecruitButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        guild = interaction.guild
+        view: RoleSelectionView = self.view  # type: ignore[assignment]
+        guild = view.bot.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
-                "I cannot detect the server right now.",
+                "Server not found right now.",
                 delete_after=20
             )
             return
@@ -179,13 +183,13 @@ def _build_onboarding_message(member: discord.Member) -> str:
 
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
     """Send onboarding DM. Returns True on success."""
-    if member.bot:
+    if member.bot or member.guild is None:
         return True
 
     try:
         await member.send(
             _build_onboarding_message(member),
-            view=RoleSelectionView(bot_client=bot)
+            view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id)
         )
         return True
     except discord.Forbidden:
@@ -212,3 +216,4 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
     await channel.send(
         f"{member.mention}, enable direct messages so I can send your onboarding instructions."
     )
+# ------------ END OF FILE ------------
