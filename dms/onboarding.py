@@ -94,14 +94,14 @@ class SteamLinkModal(discord.ui.Modal):
 
         self.steam_id_input = discord.ui.TextInput(
             label="Your Steam ID / SteamID64",
-            placeholder="Example: 76561XXXXX",
+            placeholder="Example: 7656119XXXXXXXXXX",
             max_length=32,
             required=True,
         )
         self.add_item(self.steam_id_input)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        # Защита от чужих сабмитов
+        # форма может быть переслана, поэтому проверяем владельца
         if interaction.user.id != self.member.id:
             await interaction.response.send_message(
                 "This form is bound to another user.",
@@ -111,11 +111,11 @@ class SteamLinkModal(discord.ui.Modal):
 
         steam_id = self.steam_id_input.value.strip()
 
-        # Определяем язык пользователя
+        # достаём юзера и язык из БД
         user = get_or_create_user(self.member.id)
-        lang = user.language or "en"
+        lang = (user.language or "en") if user else "en"
 
-        # Простая проверка формата
+        # простая валидация SteamID64
         if not steam_id.isdigit() or len(steam_id) < 10:
             await interaction.response.send_message(
                 t(lang, "invalid_steam_link"),
@@ -123,13 +123,16 @@ class SteamLinkModal(discord.ui.Modal):
             )
             return
 
-        # Сохраняем в БД
+        # сохраняем в базу
         link_steam(discord_id=self.member.id, steam_id=steam_id)
 
         await interaction.response.send_message(
-            t(lang, "steam_saved").format(steam_id=steam_id),
+            t(lang, "steam_saved").format(steam_id=steam_id)
+            if "steam_saved" in LANGS[lang]
+            else f"Steam ID **{steam_id}** saved. Thank you!",
             ephemeral=True,
         )
+
 
 
 # ------------ ROLE / RECRUIT VIEW ------------
@@ -232,7 +235,7 @@ class RegisterRecruitButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        view: RoleSelectionView = self.view  # type: ignore[assignment]
+        view: RoleSelectionView = self.view  # type: ignore
         guild = view.bot.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
@@ -249,13 +252,16 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # 1) тянем юзера из БД и проверяем Steam ID
+        # ВОТ ВАЖНО — получаем пользователя и язык СЕЙЧАС
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
 
+        # Теперь можно проверять Steam ID
         if not user.steam_id:
-            text = t(lang, "steam_link")
-            await interaction.response.send_message(text, ephemeral=True)
+            await interaction.response.send_message(
+                t(lang, "steam_link"),
+                ephemeral=True,
+            )
             return
 
         recruit_id = Config.RECRUIT_ROLE_ID
@@ -281,7 +287,6 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # 2) выдаём роль
         try:
             await member.add_roles(recruit_role, reason="Recruit registration")
         except discord.Forbidden:
@@ -291,13 +296,14 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # 3) обновляем статус рекрута в БД → ready
         set_recruit_status(member.id, "ready")
 
         await interaction.response.send_message(
-            f'Recruit role "{recruit_role.name}" assigned! Your application status: READY.',
+            f'Recruit role "{recruit_role.name}" assigned! '
+            f'Your application status: READY.',
             delete_after=20,
         )
+
 
 
 # ------------ STEAM LINK VIEW (3-е сообщение) ------------
