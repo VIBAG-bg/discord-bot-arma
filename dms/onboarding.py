@@ -12,7 +12,6 @@ from database.service import (
     set_recruit_status,
 )
 
-
 # ------------ LOCALIZATION ------------
 
 LANGS = {
@@ -88,7 +87,7 @@ def t(lang: str, key: str) -> str:
 class SteamLinkModal(discord.ui.Modal):
     """Modal window to collect Steam ID from the user."""
 
-    def __init__(self, member: discord.Member):
+    def __init__(self, member: discord.abc.User):
         super().__init__(title="Link your Steam ID")
         self.member = member
 
@@ -101,7 +100,7 @@ class SteamLinkModal(discord.ui.Modal):
         self.add_item(self.steam_id_input)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        # форма может быть переслана, поэтому проверяем владельца
+        # защита от чужих сабмитов
         if interaction.user.id != self.member.id:
             await interaction.response.send_message(
                 "This form is bound to another user.",
@@ -127,12 +126,9 @@ class SteamLinkModal(discord.ui.Modal):
         link_steam(discord_id=self.member.id, steam_id=steam_id)
 
         await interaction.response.send_message(
-            t(lang, "steam_saved").format(steam_id=steam_id)
-            if "steam_saved" in LANGS[lang]
-            else f"Steam ID **{steam_id}** saved. Thank you!",
+            t(lang, "steam_saved").format(steam_id=steam_id),
             ephemeral=True,
         )
-
 
 
 # ------------ ROLE / RECRUIT VIEW ------------
@@ -166,7 +162,6 @@ class RoleButton(discord.ui.Button):
         self.role_cfg = role_cfg
 
     async def callback(self, interaction: discord.Interaction):
-        # Берём guild из view, а не из interaction (в DM его нет)
         view: RoleSelectionView = self.view  # type: ignore[assignment]
         guild = view.bot.get_guild(view.guild_id)
         if guild is None:
@@ -225,7 +220,6 @@ class RoleButton(discord.ui.Button):
 RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
 
 
-
 class RegisterRecruitButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -252,11 +246,11 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # ВОТ ВАЖНО — получаем пользователя и язык СЕЙЧАС
+        # получаем пользователя и язык
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
 
-        # Теперь можно проверять Steam ID
+        # проверяем, привязан ли Steam
         if not user.steam_id:
             await interaction.response.send_message(
                 t(lang, "steam_link"),
@@ -305,7 +299,6 @@ class RegisterRecruitButton(discord.ui.Button):
         )
 
 
-
 # ------------ STEAM LINK VIEW (3-е сообщение) ------------
 
 class SteamLinkView(discord.ui.View):
@@ -325,23 +318,8 @@ class LinkSteamButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        member = interaction.guild.get_member(interaction.user.id) if interaction.guild else None
-        if member is None and interaction.guild is not None:
-            try:
-                member = await interaction.guild.fetch_member(interaction.user.id)
-            except discord.DiscordException:
-                await interaction.response.send_message(
-                    "Could not find your member profile in this server.",
-                    ephemeral=True,
-                )
-                return
-        if member is None:
-            await interaction.response.send_message(
-                "Could not find your member profile in this server.",
-                ephemeral=True,
-            )
-            return
-        modal = SteamLinkModal(member=member)
+        # В DM у нас нет guild, но нам он и не нужен — достаточно user.id
+        modal = SteamLinkModal(member=interaction.user)
         await interaction.response.send_modal(modal)
 
 
@@ -366,10 +344,10 @@ class LanguageButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: LanguageSelectView = self.view  # type: ignore[assignment]
 
-        # Пишем язык в БД
+        # Сохраняем язык в БД
         set_language(interaction.user.id, self.code)
 
-        # Небольшое подтверждение
+        # Подтверждение
         await interaction.response.send_message(
             t(self.code, "language_set"),
             ephemeral=True,
@@ -387,7 +365,7 @@ class LanguageButton(discord.ui.Button):
             except discord.DiscordException:
                 return
 
-        # И после выбора языка отправляем роли + Steam
+        # После выбора языка отправляем роли + Steam
         await send_role_and_steam_dms(bot=view.bot, member=member, lang=self.code)
 
 
@@ -435,7 +413,7 @@ async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lan
     )
 
 
-            f"{t('en', 'choose_language')}\n{t('ru', 'choose_language')}",
+# ------------ PUBLIC ENTRYPOINTS ------------
 
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
     """First onboarding DM: language selection."""
