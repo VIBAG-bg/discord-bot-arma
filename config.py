@@ -4,28 +4,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+_raw_db_url = os.getenv("DATABASE_URL")
+
+
+def _prepare_db_url(raw: str | None) -> str | None:
+    if not raw:
+        return None
+
+    url = raw
+
+    # 1) postgres:// -> postgresql+psycopg2://  (для SQLAlchemy)
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+
+    # 2) sslmode=require (для Heroku Postgres)
+    if "sslmode=" not in url:
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}sslmode=require"
+
+    return url
+
+
 class Config:
     """Bot configuration class."""
 
-    # сырое значение из env (Heroku сам кладёт его в DATABASE_URL)
-    _raw_db_url = os.getenv("DATABASE_URL")
-
-    # готовый URL для SQLAlchemy / Alembic
-    if _raw_db_url and _raw_db_url.startswith("postgres://"):
-        _db_url = _raw_db_url.replace("postgres://",
-                                      "postgresql+psycopg2://",
-                                      1)
-    else:
-        _db_url = _raw_db_url
-
-    # гарантируем sslmode=require
-    if _db_url and "sslmode=" not in _db_url:
-        if "?" in _db_url:
-            _db_url += "&sslmode=require"
-        else:
-            _db_url += "?sslmode=require"
-
-    DATABASE_URL = _db_url
+    # Database connection URL
+    DATABASE_URL = _prepare_db_url(_raw_db_url)
 
     # Discord bot token (required)
     TOKEN: str | None = os.getenv("DISCORD_TOKEN")
