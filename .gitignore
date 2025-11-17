@@ -46,3 +46,6 @@ logs/
 
 # Bot specific
 config.json
+
+# Database
+data/bot.db

@@ -6,3 +6,10 @@ python-dotenv>=1.0.0
 
 # Asyncio support
 aiohttp>=3.9.4
+
+# SQLAlchemy for database interactions
+sqlalchemy
+
+# Psycopg2 for PostgreSQL database connectivity
+psycopg2-binary
+

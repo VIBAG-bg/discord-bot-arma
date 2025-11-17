@@ -10,6 +10,8 @@ import sys
 from config import Config
 from dms.onboarding import RoleSelectionView, send_onboarding_dm, notify_dm_disabled
 from commands.help import EmbedHelpCommand
+from database.db import Base, engine
+from database import models  # важно, чтобы модели подхватились
 
 # Configure bot intents
 intents = discord.Intents.default()
@@ -93,9 +95,18 @@ async def load_extensions():
 
 
 async def main():
+    """Main function to start the bot."""
     try:
+        # Создаём таблицы в БД (локально = SQLite, на Heroku = Postgres)
+        Base.metadata.create_all(bind=engine)
+
+        # Validate configuration
         Config.validate()
+        
+        # Load extensions
         await load_extensions()
+        
+        # Start the bot
         await bot.start(Config.TOKEN)
     except KeyboardInterrupt:
         print("\nShutting down bot...")
@@ -103,6 +114,7 @@ async def main():
     except Exception as e:
         print(f"Error starting bot: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 
 if __name__ == "__main__":
