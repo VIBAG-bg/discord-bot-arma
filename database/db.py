@@ -1,20 +1,10 @@
-import os
+# database/db.py
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
+from config import Config
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = Config.DATABASE_URL
 
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    # Хероку-магия: приводим URL к формату, который понимает SQLAlchemy
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-if not DATABASE_URL:
-    # Локально работаем с SQLite
-    os.makedirs("data", exist_ok=True)
-    DATABASE_URL = "sqlite:///data/bot.db"
-
-engine = create_engine(DATABASE_URL, echo=False)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+engine = create_engine(DATABASE_URL, echo=False, future=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()

@@ -7,6 +7,26 @@ load_dotenv()
 class Config:
     """Bot configuration class."""
 
+    # сырое значение из env (Heroku сам кладёт его в DATABASE_URL)
+    _raw_db_url = os.getenv("DATABASE_URL")
+
+    # готовый URL для SQLAlchemy / Alembic
+    if _raw_db_url and _raw_db_url.startswith("postgres://"):
+        _db_url = _raw_db_url.replace("postgres://",
+                                      "postgresql+psycopg2://",
+                                      1)
+    else:
+        _db_url = _raw_db_url
+
+    # гарантируем sslmode=require
+    if _db_url and "sslmode=" not in _db_url:
+        if "?" in _db_url:
+            _db_url += "&sslmode=require"
+        else:
+            _db_url += "?sslmode=require"
+
+    DATABASE_URL = _db_url
+
     # Discord bot token (required)
     TOKEN: str | None = os.getenv("DISCORD_TOKEN")
 
