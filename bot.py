@@ -11,7 +11,9 @@ from config import Config
 from dms.onboarding import RoleSelectionView, send_onboarding_dm, notify_dm_disabled
 from commands.help import EmbedHelpCommand
 from database.db import Base, engine
-from database import models  # важно, чтобы модели подхватились
+from database import models
+from database.service import get_or_create_user
+
 
 # Configure bot intents
 intents = discord.Intents.default()
@@ -48,6 +50,7 @@ async def on_ready():
 @bot.event
 async def on_member_join(member: discord.Member):
     """Send DM onboarding. If DM is blocked → notify fallback channel."""
+    get_or_create_user(member.id)
     sent = await send_onboarding_dm(bot, member)
     if not sent:
         await notify_dm_disabled(bot, member)
