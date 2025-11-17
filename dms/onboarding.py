@@ -214,6 +214,6 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             return
 
     await channel.send(
-        f"{member.mention}, enable direct messages so I can send your onboarding instructions."
+        f"{member.mention}, enable direct messages so I can send your onboarding instructions. After enabling, please send `!onboarding` command in the server."
     )
 # ------------ END OF FILE ------------
