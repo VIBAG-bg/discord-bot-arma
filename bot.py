@@ -99,10 +99,9 @@ async def load_extensions():
 
 async def main():
     """Main function to start the bot."""
-    try:
-        # Создаём таблицы в БД (локально = SQLite, на Heroku = Postgres)
-        Base.metadata.create_all(bind=engine)
 
+    try:
+        
         # Validate configuration
         Config.validate()
         
