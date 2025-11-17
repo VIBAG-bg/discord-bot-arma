@@ -1,9 +1,10 @@
+from enum import member
 import sys
 import discord
 from discord.ext import commands
 
 from config import Config
-from database.service import link_steam, set_language, get_or_create_user, update_discord_profile
+from database.service import get_or_create_user_from_member, link_steam, set_language, get_or_create_user, update_discord_profile, set_recruit_status
 
 
 # ------------ LOCALIZATION ------------
@@ -55,6 +56,8 @@ def t(lang: str, key: str) -> str:
     data = LANGS.get(lang) or LANGS["en"]
     return data.get(key) or LANGS["en"].get(key, "")
 
+user = get_or_create_user_from_member(member)
+lang = user.language
 
 # ------------ STEAM MODAL ------------
 
@@ -86,12 +89,20 @@ class SteamLinkModal(discord.ui.Modal):
 
         # Простая проверка формата
         if not steam_id.isdigit() or len(steam_id) < 10:
-            await interaction.response.send_message(
-                "This does not look like a valid SteamID64.\n"
-                "Open your Steam profile → right click on profile page → "
-                "\"Copy Page URL\" → take the long number at the end.",
-                ephemeral=True,
-            )
+            if lang == "en":
+                await interaction.response.send_message(
+                    "This does not look like a valid SteamID64.\n"
+                    "Open your Steam profile → right click on profile page → "
+                    "\"Copy Page URL\" → take the long number at the end.",
+                    ephemeral=True,
+                )
+            else:
+                await interaction.response.send_message(
+                    "Это не похоже на действительный SteamID64.\n"
+                    "Откройте свой профиль Steam → нажмите правой кнопкой мыши на странице профиля → "
+                    "«Копировать URL-адрес страницы» → возьмите длинное число в конце.",
+                    ephemeral=True,
+                )
             return
 
         # Сохраняем в БД
@@ -190,6 +201,9 @@ class RoleButton(discord.ui.Button):
         )
 
 
+RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
+RECRUIT_DISCORD_ROLE_ID = Config.RECRUIT_ROLE_ID
+
 class RegisterRecruitButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -216,6 +230,20 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        # 1) тянем юзера из БД и проверяем Steam ID
+        user = get_or_create_user_from_member(member)
+
+        if not user.steam_id:
+            if lang == "en":
+                text = ("❗ You must link your Steam ID before applying as a recruit.\n"
+                "Open your onboarding DM and fill in the Steam ID form.\n\n" ) 
+            else:
+                text = ("❗ Сначала нужно привязать Steam ID, прежде чем подавать заявку рекрута.\n"
+                "Открой личное сообщение с ботом и заполни форму Steam ID.")
+            
+            await interaction.response.send_message(text, ephemeral=True)
+            return
+
         recruit_id = Config.RECRUIT_ROLE_ID
         if not recruit_id:
             await interaction.response.send_message(
@@ -239,6 +267,7 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        # 2) выдаём роль
         try:
             await member.add_roles(recruit_role, reason="Recruit registration")
         except discord.Forbidden:
@@ -248,11 +277,13 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        # 3) обновляем статус рекрута в БД → ready
+        set_recruit_status(member.id, "ready")
+
         await interaction.response.send_message(
-            f'Recruit role "{recruit_role.name}" assigned!',
+            f'Recruit role "{recruit_role.name}" assigned! Your application status: READY.',
             delete_after=20,
         )
-
 
 # ------------ STEAM LINK VIEW (3-е сообщение) ------------
 
@@ -412,6 +443,9 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
     await channel.send(
         f"{member.mention}, enable direct messages so I can send your onboarding "
         f"instructions. After enabling, please send `!onboarding` command in the server."
+    ) if lang == "en" else await channel.send(
+        f"{member.mention}, включите личные сообщения, чтобы я мог отправить вам "
+        f"инструкции по онбордингу. После включения отправьте команду `!onboarding` на сервере."
     )
 
 # ------------ END OF FILE ------------
