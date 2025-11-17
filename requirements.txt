@@ -13,3 +13,5 @@ sqlalchemy
 # Psycopg2 for PostgreSQL database connectivity
 psycopg2-binary
 
+# Alembic for database migrations
+alembic
