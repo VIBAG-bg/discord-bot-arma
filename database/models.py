@@ -13,6 +13,6 @@ class User(Base):
 
     steam_id = Column(String(32), nullable=True)
     language = Column(String(5), nullable=True)
-    status = Column(String(20), nullable=False, server_default="active")
+    recruit_status = Column(String(20), default="pending", nullable=False)
     is_admin = Column(Boolean, nullable=False, server_default="false")
 
