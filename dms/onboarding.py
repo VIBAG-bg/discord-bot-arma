@@ -115,8 +115,8 @@ class SteamLinkModal(discord.ui.Modal):
         user = get_or_create_user(self.member.id)
         lang = (user.language or "en") if user else "en"
 
-        # простая валидация SteamID64
-        if not steam_id.isdigit() or len(steam_id) < 10:
+        # строгая валидация SteamID64: 17 цифр, начинается с '7656119'
+        if not (steam_id.isdigit() and len(steam_id) == 17 and steam_id.startswith("7656119")):
             await interaction.response.send_message(
                 t(lang, "invalid_steam_link"),
                 ephemeral=True,
@@ -223,7 +223,7 @@ class RoleButton(discord.ui.Button):
 
 
 RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
-RECRUIT_DISCORD_ROLE_ID = Config.RECRUIT_ROLE_ID
+
 
 
 class RegisterRecruitButton(discord.ui.Button):
@@ -325,7 +325,23 @@ class LinkSteamButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        modal = SteamLinkModal(member=interaction.user)
+        member = interaction.guild.get_member(interaction.user.id) if interaction.guild else None
+        if member is None and interaction.guild is not None:
+            try:
+                member = await interaction.guild.fetch_member(interaction.user.id)
+            except discord.DiscordException:
+                await interaction.response.send_message(
+                    "Could not find your member profile in this server.",
+                    ephemeral=True,
+                )
+                return
+        if member is None:
+            await interaction.response.send_message(
+                "Could not find your member profile in this server.",
+                ephemeral=True,
+            )
+            return
+        modal = SteamLinkModal(member=member)
         await interaction.response.send_modal(modal)
 
 
@@ -419,7 +435,7 @@ async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lan
     )
 
 
-# ------------ PUBLIC ENTRYPOINTS ------------
+            f"{t('en', 'choose_language')}\n{t('ru', 'choose_language')}",
 
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
     """First onboarding DM: language selection."""
