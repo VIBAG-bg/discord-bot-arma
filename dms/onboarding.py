@@ -3,7 +3,57 @@ import discord
 from discord.ext import commands
 
 from config import Config
-from database.service import link_steam
+from database.service import link_steam, set_language, get_or_create_user
+
+
+# ------------ LOCALIZATION ------------
+
+LANGS = {
+    "en": {
+        "greeting": "Hello, {name}!",
+        "roles_header": "Available server roles:",
+        "roles_hint": "Press role buttons below to assign them instantly.",
+        "recruit_hint": (
+            "To register as an ARMA 3 recruit:\n"
+            "→ Press the green 'Register as Recruit' button."
+        ),
+        "steam_intro": (
+            "To complete your onboarding, please link your Steam account.\n\n"
+            "How to find your SteamID64:\n"
+            "1) Open Steam (client or browser) and go to your profile page.\n"
+            "2) Right click on the page → 'Copy Page URL'.\n"
+            "3) In the URL, there will be a long number at the end – this is your SteamID64.\n\n"
+            "Press the **Link Steam ID** button below and paste this number into the form."
+        ),
+        "language_set": "Language set: EN",
+        "choose_language": "Выберите язык / Choose your language:",
+    },
+    "ru": {
+        "greeting": "Привет, {name}!",
+        "roles_header": "Доступные роли на сервере:",
+        "roles_hint": "Нажмите на кнопки ролей ниже, чтобы выдать их себе.",
+        "recruit_hint": (
+            "Чтобы зарегистрироваться рекрутом ARMA 3:\n"
+            "→ Нажмите зелёную кнопку «Register as Recruit»."
+        ),
+        "steam_intro": (
+            "Чтобы завершить онбординг, привяжите ваш Steam-аккаунт.\n\n"
+            "Как найти SteamID64:\n"
+            "1) Откройте Steam и перейдите на страницу профиля.\n"
+            "2) Нажмите ПКМ по странице → «Копировать URL-адрес».\n"
+            "3) В конце ссылки будет длинное число — это ваш SteamID64.\n\n"
+            "Нажмите кнопку **Link Steam ID** ниже и вставьте это число в форму."
+        ),
+        "language_set": "Язык установлен: RU",
+        "choose_language": "Выберите язык / Choose your language:",
+    },
+}
+
+
+def t(lang: str, key: str) -> str:
+    """Simple translation helper."""
+    data = LANGS.get(lang) or LANGS["en"]
+    return data.get(key) or LANGS["en"].get(key, "")
 
 
 # ------------ STEAM MODAL ------------
@@ -204,7 +254,7 @@ class RegisterRecruitButton(discord.ui.Button):
         )
 
 
-# ------------ STEAM LINK VIEW (2-е сообщение) ------------
+# ------------ STEAM LINK VIEW (3-е сообщение) ------------
 
 class SteamLinkView(discord.ui.View):
     """View with a single button that opens Steam link modal."""
@@ -227,7 +277,53 @@ class LinkSteamButton(discord.ui.Button):
         await interaction.response.send_modal(modal)
 
 
-# ------------ DM ONBOARDING TEXTS ------------
+# ------------ LANGUAGE SELECT (1-е сообщение) ------------
+
+class LanguageSelectView(discord.ui.View):
+    """First step: language selection."""
+
+    def __init__(self, bot_client: commands.Bot, guild_id: int):
+        super().__init__(timeout=900)
+        self.bot = bot_client
+        self.guild_id = guild_id
+        self.add_item(LanguageButton("en", "🇬🇧 English"))
+        self.add_item(LanguageButton("ru", "🇷🇺 Русский"))
+
+
+class LanguageButton(discord.ui.Button):
+    def __init__(self, code: str, label: str):
+        super().__init__(label=label, style=discord.ButtonStyle.primary)
+        self.code = code
+
+    async def callback(self, interaction: discord.Interaction):
+        view: LanguageSelectView = self.view  # type: ignore[assignment]
+
+        # Пишем язык в БД
+        set_language(interaction.user.id, self.code)
+
+        # Небольшое подтверждение
+        await interaction.response.send_message(
+            t(self.code, "language_set"),
+            ephemeral=True,
+        )
+
+        # Получаем guild и member
+        guild = view.bot.get_guild(view.guild_id)
+        if guild is None:
+            return
+
+        member = guild.get_member(interaction.user.id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(interaction.user.id)
+            except discord.DiscordException:
+                return
+
+        # И после выбора языка отправляем роли + Steam
+        await send_role_and_steam_dms(bot=view.bot, member=member, lang=self.code)
+
+
+# ------------ DM TEXT HELPERS ------------
 
 def _format_role_list() -> str:
     if not Config.ROLE_DEFINITIONS:
@@ -241,49 +337,53 @@ def _format_role_list() -> str:
     return "\n".join(lines)
 
 
-def _build_onboarding_message(member: discord.Member) -> str:
+def _build_onboarding_message(member: discord.Member, lang: str) -> str:
     return (
-        f"Hello, {member.display_name}!\n\n"
+        f"{t(lang, 'greeting').format(name=member.display_name)}\n\n"
         f"{Config.WELCOME_MESSAGE}\n\n"
-        f"Available server roles:\n"
+        f"{t(lang, 'roles_header')}\n"
         f"{_format_role_list()}\n\n"
-        "Press role buttons below to assign them instantly.\n\n"
-        "To register as an ARMA 3 recruit:\n"
-        "→ Press the green 'Register as Recruit' button.\n"
+        f"{t(lang, 'roles_hint')}\n\n"
+        f"{t(lang, 'recruit_hint')}\n"
     )
 
 
-def _build_steam_message(member: discord.Member) -> str:
-    return (
-        "To complete your onboarding, please link your Steam account.\n\n"
-        "How to find your SteamID64:\n"
-        "1) Open Steam (client or browser) and go to your profile page.\n"
-        "2) Right click on the page → 'Copy Page URL'.\n"
-        "3) In the URL, there will be a long number at the end – this is your SteamID64.\n\n"
-        "Press the **Link Steam ID** button below and paste this number into the form."
+def _build_steam_message(member: discord.Member, lang: str) -> str:
+    return t(lang, "steam_intro")
+
+
+async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lang: str):
+    """Send roles DM + Steam DM after language selection."""
+    # 2-е сообщение: роли и рекрут
+    await member.send(
+        _build_onboarding_message(member, lang),
+        view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id),
+    )
+
+    # 3-е сообщение: про Steam + кнопка с модалкой
+    await member.send(
+        _build_steam_message(member, lang),
+        view=SteamLinkView(),
     )
 
 
-# ------------ PUBLIC FUNCTIONS ------------
+# ------------ PUBLIC ENTRYPOINTS ------------
 
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
-    """Send onboarding DMs. Returns True on success."""
+    """First onboarding DM: language selection."""
     if member.bot or member.guild is None:
         return True
 
     try:
-        # 1-е сообщение: роли и рекрут
-        await member.send(
-            _build_onboarding_message(member),
-            view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id),
-        )
+        # создаём пользователя, если ещё нет
+        get_or_create_user(member.id)
 
-        # 2-е сообщение: про Steam + кнопка с модалкой
+        # первое сообщение: выбор языка
+        # текст двухязычный, чтобы все поняли хотя бы что происходит
         await member.send(
-            _build_steam_message(member),
-            view=SteamLinkView(),
+            t("ru", "choose_language"),
+            view=LanguageSelectView(bot_client=bot, guild_id=member.guild.id),
         )
-
         return True
     except discord.Forbidden:
         return False
