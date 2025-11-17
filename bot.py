@@ -49,7 +49,7 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member: discord.Member):
-    """Send DM onboarding. If DM is blocked → notify fallback channel."""
+    """Send DM onboarding. If DM is blocked → notify fallback channel + create user in DB."""
     get_or_create_user(member.id)
     sent = await send_onboarding_dm(bot, member)
     if not sent:
