@@ -8,9 +8,9 @@ from database.models import Base
 
 config = context.config
 
-# берём URL из нашего Config и прокидываем внутрь alembic
-if Config.DATABASE_URL:
-    config.set_main_option("sqlalchemy.url", Config.DATABASE_URL)
+# если URL есть в Config – используем его
+database_url = Config.DATABASE_URL or "sqlite:///bot.db"
+config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
