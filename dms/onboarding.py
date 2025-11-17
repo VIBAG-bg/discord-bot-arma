@@ -1,8 +1,59 @@
 import sys
 import discord
 from discord.ext import commands
-from config import Config
 
+from config import Config
+from database.service import link_steam
+
+
+# ------------ STEAM MODAL ------------
+
+class SteamLinkModal(discord.ui.Modal):
+    """Modal window to collect Steam ID from the user."""
+
+    def __init__(self, member: discord.Member):
+        super().__init__(title="Link your Steam ID")
+        self.member = member
+
+        self.steam_id_input = discord.ui.TextInput(
+            label="Your Steam ID / SteamID64",
+            placeholder="Example: 7656119XXXXXXXXXX",
+            max_length=32,
+            required=True,
+        )
+        self.add_item(self.steam_id_input)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        # Защита от чужих сабмитов
+        if interaction.user.id != self.member.id:
+            await interaction.response.send_message(
+                "This form is bound to another user.",
+                ephemeral=True,
+            )
+            return
+
+        steam_id = self.steam_id_input.value.strip()
+
+        # Простая проверка формата
+        if not steam_id.isdigit() or len(steam_id) < 10:
+            await interaction.response.send_message(
+                "This does not look like a valid SteamID64.\n"
+                "Open your Steam profile → right click on profile page → "
+                "\"Copy Page URL\" → take the long number at the end.",
+                ephemeral=True,
+            )
+            return
+
+        # Сохраняем в БД
+        link_steam(discord_id=self.member.id, steam_id=steam_id)
+
+        await interaction.response.send_message(
+            f"Steam ID **{steam_id}** saved. Thank you!",
+            ephemeral=True,
+        )
+
+
+# ------------ ROLE / RECRUIT VIEW ------------
 
 class RoleSelectionView(discord.ui.View):
     """Interactive role selection + recruit registration view."""
@@ -20,8 +71,6 @@ class RoleSelectionView(discord.ui.View):
         self.add_item(RegisterRecruitButton())
 
 
-# ------------ BUTTONS ------------
-
 class RoleButton(discord.ui.Button):
     def __init__(self, role_cfg: dict):
         label = role_cfg.get("label", "Role")
@@ -30,7 +79,7 @@ class RoleButton(discord.ui.Button):
         super().__init__(
             label=label,
             style=discord.ButtonStyle.secondary,
-            custom_id=f"role_{role_id or label}"
+            custom_id=f"role_{role_id or label}",
         )
         self.role_cfg = role_cfg
 
@@ -41,7 +90,7 @@ class RoleButton(discord.ui.Button):
         if guild is None:
             await interaction.response.send_message(
                 "Server not found. Contact staff.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -49,7 +98,7 @@ class RoleButton(discord.ui.Button):
         if not role_id:
             await interaction.response.send_message(
                 "This role is not configured properly.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -57,7 +106,7 @@ class RoleButton(discord.ui.Button):
         if member is None:
             await interaction.response.send_message(
                 "Cannot find your account on this server.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -65,14 +114,14 @@ class RoleButton(discord.ui.Button):
         if not role:
             await interaction.response.send_message(
                 "Role not found. Ask staff to configure it.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
         if role in member.roles:
             await interaction.response.send_message(
                 f'Role "{role.name}" is already assigned.',
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -81,13 +130,13 @@ class RoleButton(discord.ui.Button):
         except discord.Forbidden:
             await interaction.response.send_message(
                 "I don't have permission to add that role.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
         await interaction.response.send_message(
             f'Role "{role.name}" added!',
-            delete_after=20
+            delete_after=20,
         )
 
 
@@ -96,7 +145,7 @@ class RegisterRecruitButton(discord.ui.Button):
         super().__init__(
             label="Register as Recruit",
             style=discord.ButtonStyle.success,
-            custom_id="register_recruit"
+            custom_id="register_recruit",
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -105,7 +154,7 @@ class RegisterRecruitButton(discord.ui.Button):
         if guild is None:
             await interaction.response.send_message(
                 "Server not found right now.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -113,7 +162,7 @@ class RegisterRecruitButton(discord.ui.Button):
         if member is None:
             await interaction.response.send_message(
                 "Cannot find your member record on this server.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -121,7 +170,7 @@ class RegisterRecruitButton(discord.ui.Button):
         if not recruit_id:
             await interaction.response.send_message(
                 "Recruit role ID is not configured correctly.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -129,14 +178,14 @@ class RegisterRecruitButton(discord.ui.Button):
         if not recruit_role:
             await interaction.response.send_message(
                 "Recruit role not found. Ask staff to configure it.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
         if recruit_role in member.roles:
             await interaction.response.send_message(
                 "You are already registered as a recruit.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
@@ -145,17 +194,40 @@ class RegisterRecruitButton(discord.ui.Button):
         except discord.Forbidden:
             await interaction.response.send_message(
                 "I cannot grant the recruit role. Contact staff.",
-                delete_after=20
+                delete_after=20,
             )
             return
 
         await interaction.response.send_message(
             f'Recruit role "{recruit_role.name}" assigned!',
-            delete_after=20
+            delete_after=20,
         )
 
 
-# ------------ DM ONBOARDING LOGIC ------------
+# ------------ STEAM LINK VIEW (2-е сообщение) ------------
+
+class SteamLinkView(discord.ui.View):
+    """View with a single button that opens Steam link modal."""
+
+    def __init__(self):
+        super().__init__(timeout=900)
+        self.add_item(LinkSteamButton())
+
+
+class LinkSteamButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Link Steam ID",
+            style=discord.ButtonStyle.primary,
+            custom_id="link_steam",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        modal = SteamLinkModal(member=interaction.user)
+        await interaction.response.send_modal(modal)
+
+
+# ------------ DM ONBOARDING TEXTS ------------
 
 def _format_role_list() -> str:
     if not Config.ROLE_DEFINITIONS:
@@ -181,16 +253,37 @@ def _build_onboarding_message(member: discord.Member) -> str:
     )
 
 
+def _build_steam_message(member: discord.Member) -> str:
+    return (
+        "To complete your onboarding, please link your Steam account.\n\n"
+        "How to find your SteamID64:\n"
+        "1) Open Steam (client or browser) and go to your profile page.\n"
+        "2) Right click on the page → 'Copy Page URL'.\n"
+        "3) In the URL, there will be a long number at the end – this is your SteamID64.\n\n"
+        "Press the **Link Steam ID** button below and paste this number into the form."
+    )
+
+
+# ------------ PUBLIC FUNCTIONS ------------
+
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
-    """Send onboarding DM. Returns True on success."""
+    """Send onboarding DMs. Returns True on success."""
     if member.bot or member.guild is None:
         return True
 
     try:
+        # 1-е сообщение: роли и рекрут
         await member.send(
             _build_onboarding_message(member),
-            view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id)
+            view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id),
         )
+
+        # 2-е сообщение: про Steam + кнопка с модалкой
+        await member.send(
+            _build_steam_message(member),
+            view=SteamLinkView(),
+        )
+
         return True
     except discord.Forbidden:
         return False
@@ -214,6 +307,8 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             return
 
     await channel.send(
-        f"{member.mention}, enable direct messages so I can send your onboarding instructions. After enabling, please send `!onboarding` command in the server."
+        f"{member.mention}, enable direct messages so I can send your onboarding "
+        f"instructions. After enabling, please send `!onboarding` command in the server."
     )
+
 # ------------ END OF FILE ------------
