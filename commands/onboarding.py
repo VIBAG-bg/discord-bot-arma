@@ -4,12 +4,16 @@ from dms.onboarding import send_onboarding_dm
 
 
 class Onboarding(commands.Cog):
-    """Commands to resend onboarding DM."""
+    """Onboarding & recruit-related commands."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.command(name="onboarding")
+    @commands.command(
+        name="onboarding",
+        usage="",
+        help="Resend onboarding DM to yourself."
+    )
     async def onboarding_self(self, ctx: commands.Context):
         """
         Resend onboarding DM to the command author.
@@ -36,7 +40,13 @@ class Onboarding(commands.Cog):
                 mention_author=False,
             )
 
-    @commands.command(name="onboarding_for")
+
+    @commands.command(
+        name="onboarding_for",
+        usage="<@user>",
+        help="Send onboarding DM to a specific member.",
+        extras={"admin_only": True}  # ← помечаем как админскую
+    )
     @commands.has_permissions(manage_guild=True)  # офицеры/админы
     async def onboarding_for(self, ctx: commands.Context, member: discord.Member):
         """

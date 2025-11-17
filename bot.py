@@ -9,6 +9,7 @@ import asyncio
 import sys
 from config import Config
 from dms.onboarding import RoleSelectionView, send_onboarding_dm, notify_dm_disabled
+from commands.help import EmbedHelpCommand
 
 # Configure bot intents
 intents = discord.Intents.default()
@@ -20,7 +21,7 @@ intents.presences = False
 bot = commands.Bot(
     command_prefix=Config.PREFIX,
     intents=intents,
-    help_command=commands.DefaultHelpCommand(),
+    help_command=EmbedHelpCommand(),
     description="ARMA 3 Community Discord Bot"
 )
 
