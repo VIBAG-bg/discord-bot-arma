@@ -12,6 +12,7 @@ from database.service import (
     get_or_create_user_from_member,
     update_discord_profile,
     set_recruit_status,
+    get_recruit_code,
 )
 
 # ------------ LOCALIZATION ------------
@@ -271,7 +272,11 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
                 speak=True,
             )
 
-    base_name = f"recruit-{member.name}".lower()
+
+    user = get_or_create_user_from_member(member)  # ORM user
+    code = get_recruit_code(user)
+
+    base_name = f"recruit-{member.name.lower()}-{code}"
 
     text_channel = await guild.create_text_channel(
         name=base_name,

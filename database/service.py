@@ -105,3 +105,7 @@ def set_recruit_status(discord_id: int, status: str) -> None:
             db.add(user)
         else:
             user.recruit_status = status
+
+
+    def get_recruit_code(user: User) -> str:
+        return f"R-{user.id:04d}"
