@@ -66,14 +66,20 @@ def set_language(discord_id: int, lang: str) -> None:
             user.language = lang
 
 
+def build_steam_url(steam_id: str) -> str:
+    return f"https://steamcommunity.com/profiles/{steam_id}"
+
+
 def link_steam(discord_id: int, steam_id: str) -> None:
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=discord_id).first()
         if user is None:
-            user = User(discord_id=discord_id, steam_id=steam_id)
+            user = User(discord_id=discord_id)
             db.add(user)
-        else:
-            user.steam_id = steam_id
+
+        user.steam_id = steam_id
+        user.steam_url = build_steam_url(steam_id)
+
 
 
 def update_discord_profile(member: Member) -> None:
