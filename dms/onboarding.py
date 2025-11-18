@@ -232,8 +232,62 @@ class RoleButton(discord.ui.Button):
             delete_after=20,
         )
 
-
 RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
+
+async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
+    """
+    Создаём личный текстовый и голосовой каналы для рекрута.
+    Возвращаем (text_channel, voice_channel).
+    """
+    # 1) Категория
+    category = guild.get_channel(Config.RECRUIT_CATEGORY_ID)
+    if category is None or not isinstance(category, discord.CategoryChannel):
+        # если категории нет – лучше не продолжать, чтобы не плодить мусор в корне сервера
+        raise RuntimeError("Recruit category is not configured correctly.")
+
+    # 2) Пермишены
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(
+            view_channel=False
+        ),
+        member: discord.PermissionOverwrite(
+            view_channel=True,
+            read_message_history=True,
+            send_messages=True,
+            connect=True,
+            speak=True,
+        ),
+    }
+
+    # добавляем STAFF / RECRUITERS
+    for role_id in getattr(Config, "RECRUITER_ROLE_IDS", []):
+        role = guild.get_role(role_id)
+        if role is not None:
+            overwrites[role] = discord.PermissionOverwrite(
+                view_channel=True,
+                read_message_history=True,
+                send_messages=True,
+                connect=True,
+                speak=True,
+            )
+
+    base_name = f"recruit-{member.name}".lower()
+
+    text_channel = await guild.create_text_channel(
+        name=base_name,
+        category=category,
+        overwrites=overwrites,
+        reason=f"Recruit interview channel for {member}",
+    )
+
+    voice_channel = await guild.create_voice_channel(
+        name=base_name,
+        category=category,
+        overwrites=overwrites,
+        reason=f"Recruit interview voice for {member}",
+    )
+
+    return text_channel, voice_channel
 
 
 class RegisterRecruitButton(discord.ui.Button):
@@ -306,13 +360,34 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        # статус в БД
         set_recruit_status(member.id, "ready")
 
+        # создаём личные каналы
+        try:
+            text_ch, voice_ch = await create_recruit_channels(guild, member)
+        except Exception as e:
+            # если не удалось создать каналы – хотя бы скажем модерам в логах
+            print(f"[recruit channels ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+            await interaction.response.send_message(
+                "Recruit role assigned, but interview channels could not be created. "
+                "Please contact staff.",
+                ephemeral=True,
+            )
+            return
+
+        # ответ рекруту в DM-контексте (interaction – из лички)
         await interaction.response.send_message(
-            f'Recruit role "{recruit_role.name}" assigned! '
-            f'Your application status: READY.',
-            delete_after=20,
+            (
+                f'Recruit role "{recruit_role.name}" assigned!\n'
+                f'Your application status: **READY**.\n\n'
+                f'A private interview text & voice channel have been created for you:\n'
+                f'- Text: {text_ch.mention}\n'
+                f'- Voice: {voice_ch.mention}'
+            ),
+            ephemeral=True,
         )
+
 
 
 # ------------ STEAM LINK VIEW ------------

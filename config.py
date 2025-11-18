@@ -104,6 +104,10 @@ class Config:
         },
     ]
 
+    RECRUITER_ROLE_ID = int(os.getenv("RECRUITER_ROLE_ID"))
+    
+    RECRUIT_CATEGORY_ID = int(os.getenv("RECRUIT_CATEGORY_ID"))
+
     @staticmethod
     def validate() -> bool:
         """Validate that required configuration is present."""
