@@ -58,7 +58,7 @@ class Config:
     RECRUIT_ROLE_ID: int = int(os.getenv("RECRUIT_ROLE_ID", "0"))
 
     # Static list of roles that can be self-assigned via onboarding DM
-    ROLE_DEFINITIONS: list[dict] = [
+    ROLE_DEFINITIONS_ENG: list[dict] = [
         {
             "label": "Assault",
             "description": "Frontline infantry focused on direct engagements.",
@@ -77,6 +77,29 @@ class Config:
         {
             "label": "Support",
             "description": "Handles vehicles, heavy weapons, and resupply.",
+            "id": int(os.getenv("ROLE_SUPPORT_ID", "0")),
+        },
+    ]
+
+    ROLE_DEFINITIONS_RUS: list[dict] = [
+        {
+            "label": "Штурмовик",
+            "description": "Пехота передовой, сосредоточенная на прямых столкновениях.",
+            "id": int(os.getenv("ROLE_ASSAULT_ID", "0")),
+        },
+        {
+            "label": "Медик",
+            "description": "Поддерживает отряды живыми с помощью сортировки и эвакуации.",
+            "id": int(os.getenv("ROLE_MEDIC_ID", "0")),
+        },
+        {
+            "label": "Пилот",
+            "description": "Обеспечивает воздушную транспортировку, поддержку с воздуха и логистику.",
+            "id": int(os.getenv("ROLE_PILOT_ID", "0")),
+        },
+        {
+            "label": "Поддержка",
+            "description": "Обслуживает транспортные средства, тяжелое оружие и пополнение запасов.",
             "id": int(os.getenv("ROLE_SUPPORT_ID", "0")),
         },
     ]

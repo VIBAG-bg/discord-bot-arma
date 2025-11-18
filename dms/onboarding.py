@@ -44,6 +44,9 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
+        "dm_disabled_notice": ("{member}, enable direct messages so I can send your onboarding "
+            "instructions. After enabling, please send `!onboarding` command in the server."
+        ),
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -73,6 +76,9 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
+        "dm_disabled_notice": ("{member}, включите личные сообщения, чтобы я мог отправить вам инструкции по адаптации. "
+            "После включения, пожалуйста, отправьте команду `!onboarding` на сервере."
+        ),
     },
 }
 
@@ -371,16 +377,22 @@ class LanguageButton(discord.ui.Button):
 
 # ------------ DM TEXT HELPERS ------------
 
-def _format_role_list() -> str:
-    if not Config.ROLE_DEFINITIONS:
+def _format_role_list(lang: str) -> str:
+    if lang == "ru":
+        defs = Config.ROLE_DEFINITIONS_RUS or Config.ROLE_DEFINITIONS_ENG
+    else:
+        defs = Config.ROLE_DEFINITIONS_ENG or Config.ROLE_DEFINITIONS_RUS
+
+    if not defs:
         return "- No self-assignable roles are configured."
 
     lines = []
-    for cfg in Config.ROLE_DEFINITIONS:
+    for cfg in defs:
         label = cfg.get("label", "Role")
         desc = cfg.get("description", "")
         lines.append(f"- {label}: {desc}".rstrip())
     return "\n".join(lines)
+
 
 
 def _build_onboarding_message(member: discord.Member, lang: str) -> str:
@@ -447,7 +459,7 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             print(f"Cannot fetch fallback channel: {e}", file=sys.stderr)
             return
 
-    await channel.send(
-        f"{member.mention}, enable direct messages so I can send your onboarding "
-        f"instructions. After enabling, please send `!onboarding` command in the server."
-    )
+    user = get_or_create_user(member.id)
+    lang = (user.language or "en") if user else "en"
+
+    await channel.send(t(lang, "dm_disabled_notice").format(member=member))
