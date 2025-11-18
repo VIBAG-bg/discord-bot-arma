@@ -107,5 +107,6 @@ def set_recruit_status(discord_id: int, status: str) -> None:
             user.recruit_status = status
 
 
-    def get_recruit_code(user: User) -> str:
-        return f"R-{user.id:04d}"
+def get_recruit_code(user: User) -> str:
+    """Генерируем код рекрута по его ID в формате R-0001, R-0002 и т.д."""
+    return f"R-{user.id:04d}"
