@@ -152,13 +152,14 @@ class SteamLinkModal(discord.ui.Modal):
 class RoleSelectionView(discord.ui.View):
     """Interactive role selection + recruit registration view."""
 
-    def __init__(self, bot_client: commands.Bot, guild_id: int):
+    def __init__(self, bot_client: commands.Bot, guild_id: int, lang: str):
         super().__init__(timeout=3600)
         self.bot = bot_client
         self.guild_id = guild_id
+        self.lang = lang
 
-        # одна общая конфигурация ролей
-        for role_cfg in getattr(Config, "ROLE_DEFINITIONS", []) or []:
+        from dms.onboarding import _get_role_definitions_for_lang
+        for role_cfg in _get_role_definitions_for_lang(lang):
             self.add_item(RoleButton(role_cfg))
 
         self.add_item(RegisterRecruitButton())
@@ -436,7 +437,7 @@ async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lan
     # 2-е сообщение: роли и рекрут
     await member.send(
         _build_onboarding_message(member, lang),
-        view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id),
+        view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id, lang=lang),
     )
 
     # 3-е сообщение: про Steam + кнопка с модалкой
