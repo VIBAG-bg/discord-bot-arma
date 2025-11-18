@@ -49,3 +49,4 @@ config.json
 
 # Database
 data/bot.db
+bot.db
