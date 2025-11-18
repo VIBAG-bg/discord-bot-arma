@@ -44,9 +44,6 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
-        "dm_disabled_notice": ("{member}, enable direct messages so I can send your onboarding "
-            "instructions. After enabling, please send `!onboarding` command in the server."
-        ),
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -76,9 +73,6 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
-        "dm_disabled_notice": ("{member}, включите личные сообщения, чтобы я мог отправить вам инструкции по адаптации. "
-            "После включения, пожалуйста, отправьте команду `!onboarding` на сервере."
-        ),
     },
 }
 
@@ -450,7 +444,6 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
     chan_id = Config.FALLBACK_CHANNEL_ID
     if not chan_id:
         return
-
     channel = bot.get_channel(chan_id)
     if channel is None:
         try:
@@ -458,8 +451,7 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
         except Exception as e:
             print(f"Cannot fetch fallback channel: {e}", file=sys.stderr)
             return
-
-    user = get_or_create_user(member.id)
-    lang = (user.language or "en") if user else "en"
-
-    await channel.send(t(lang, "dm_disabled_notice").format(member=member))
+    await channel.send(
+        f"{member.mention}, enable direct messages so I can send your onboarding "
+        f"instructions. After enabling, please send !onboarding command in the server."
+    )
