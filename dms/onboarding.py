@@ -1,3 +1,4 @@
+# dms/onboarding.py
 import sys
 import discord
 from discord.ext import commands
@@ -419,8 +420,10 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
         get_or_create_user(member.id)
         update_discord_profile(member)
 
+        text = f"{t('ru', 'choose_language')} / {t('en', 'choose_language')}"
+
         await member.send(
-            t("ru", "choose_language"),
+            text,
             view=LanguageSelectView(bot_client=bot, guild_id=member.guild.id),
         )
         return True
