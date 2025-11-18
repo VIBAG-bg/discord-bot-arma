@@ -13,6 +13,7 @@ class User(Base):
     display_name = Column(String(100), nullable=True)   # Nick on server
 
     steam_id = Column(String(32), nullable=True)
+    steam_url = Column(String(255), nullable=True)
     language = Column(String(5), nullable=True)
     recruit_status = Column(String(20), default="pending", nullable=False)
     is_admin = Column(Boolean, nullable=False, server_default="false")
