@@ -1,4 +1,5 @@
 # dms/onboarding.py
+
 import sys
 import discord
 from discord.ext import commands
@@ -78,11 +79,13 @@ LANGS = {
 
 
 def t(lang: str, key: str) -> str:
+    """Simple translation helper."""
     data = LANGS.get(lang) or LANGS["en"]
     return data.get(key) or LANGS["en"].get(key, "")
 
 
 # ------------ STEAM MODAL ------------
+
 
 class SteamLinkModal(discord.ui.Modal):
     """Modal window to collect Steam ID from the user."""
@@ -131,15 +134,20 @@ class SteamLinkModal(discord.ui.Modal):
                 ephemeral=True,
             )
         except Exception as e:
-            # чтобы НЕ было "что-то пошло не так", а была инфа в консоли
+            # логируем нормальную ошибку, чтобы не было "что-то пошло не так"
             print(f"[SteamLinkModal ERROR] {type(e).__name__}: {e}", file=sys.stderr)
-            await interaction.response.send_message(
-                "Internal error while saving Steam ID. Contact staff.",
-                ephemeral=True,
-            )
+            try:
+                await interaction.response.send_message(
+                    "Internal error while saving Steam ID. Contact staff.",
+                    ephemeral=True,
+                )
+            except discord.InteractionResponded:
+                # на всякий случай, если уже ответили
+                pass
 
 
 # ------------ ROLE / RECRUIT VIEW ------------
+
 
 class RoleSelectionView(discord.ui.View):
     """Interactive role selection + recruit registration view."""
@@ -149,7 +157,8 @@ class RoleSelectionView(discord.ui.View):
         self.bot = bot_client
         self.guild_id = guild_id
 
-        for role_cfg in Config.ROLE_DEFINITIONS:
+        # одна общая конфигурация ролей
+        for role_cfg in getattr(Config, "ROLE_DEFINITIONS", []) or []:
             self.add_item(RoleButton(role_cfg))
 
         self.add_item(RegisterRecruitButton())
@@ -252,9 +261,11 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        # актуализируем профиль и читаем язык
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
 
+        # проверка Steam ID
         if not user.steam_id:
             await interaction.response.send_message(
                 t(lang, "steam_link"),
@@ -262,7 +273,7 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        recruit_id = Config.RECRUIT_ROLE_ID
+        recruit_id = RECRUIT_ROLE_ID
         if not recruit_id:
             await interaction.response.send_message(
                 "Recruit role ID is not configured correctly.",
@@ -305,6 +316,7 @@ class RegisterRecruitButton(discord.ui.Button):
 
 # ------------ STEAM LINK VIEW ------------
 
+
 class SteamLinkView(discord.ui.View):
     """View with a single button that opens Steam link modal."""
 
@@ -322,12 +334,12 @@ class LinkSteamButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        # в DM `interaction.user` — это то, что нам нужно
         modal = SteamLinkModal(member=interaction.user)
         await interaction.response.send_modal(modal)
 
 
 # ------------ LANGUAGE SELECT ------------
+
 
 class LanguageSelectView(discord.ui.View):
     """First step: language selection."""
@@ -348,13 +360,16 @@ class LanguageButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: LanguageSelectView = self.view  # type: ignore[assignment]
 
+        # пишем язык в БД
         set_language(interaction.user.id, self.code)
 
+        # подтверждение
         await interaction.response.send_message(
             t(self.code, "language_set"),
             ephemeral=True,
         )
 
+        # ищем участника в гильдии
         guild = view.bot.get_guild(view.guild_id)
         if guild is None:
             return
@@ -366,17 +381,30 @@ class LanguageButton(discord.ui.Button):
             except discord.DiscordException:
                 return
 
+        # отправляем вторую и третью ДМки
         await send_role_and_steam_dms(bot=view.bot, member=member, lang=self.code)
 
 
 # ------------ DM TEXT HELPERS ------------
 
-def _format_role_list(lang: str) -> str:
-    if lang == "ru":
-        defs = Config.ROLE_DEFINITIONS_RUS or Config.ROLE_DEFINITIONS_ENG
-    else:
-        defs = Config.ROLE_DEFINITIONS_ENG or Config.ROLE_DEFINITIONS_RUS
 
+def _get_role_definitions_for_lang(lang: str):
+    """
+    Аккуратно достаём дефиниции ролей, не падая,
+    даже если в Config нет каких-то атрибутов.
+    """
+    base = getattr(Config, "ROLE_DEFINITIONS", None)
+    eng = getattr(Config, "ROLE_DEFINITIONS_ENG", None)
+    rus = getattr(Config, "ROLE_DEFINITIONS_RUS", None)
+
+    if lang == "ru":
+        return rus or base or eng or []
+    else:
+        return eng or base or rus or []
+
+
+def _format_role_list(lang: str) -> str:
+    defs = _get_role_definitions_for_lang(lang)
     if not defs:
         return "- No self-assignable roles are configured."
 
@@ -386,7 +414,6 @@ def _format_role_list(lang: str) -> str:
         desc = cfg.get("description", "")
         lines.append(f"- {label}: {desc}".rstrip())
     return "\n".join(lines)
-
 
 
 def _build_onboarding_message(member: discord.Member, lang: str) -> str:
@@ -405,11 +432,14 @@ def _build_steam_message(member: discord.Member, lang: str) -> str:
 
 
 async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lang: str):
+    """Send roles DM + Steam DM after language selection."""
+    # 2-е сообщение: роли и рекрут
     await member.send(
         _build_onboarding_message(member, lang),
         view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id),
     )
 
+    # 3-е сообщение: про Steam + кнопка с модалкой
     await member.send(
         _build_steam_message(member, lang),
         view=SteamLinkView(),
@@ -418,12 +448,16 @@ async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lan
 
 # ------------ PUBLIC ENTRYPOINTS ------------
 
+
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
+    """First onboarding DM: language selection."""
     if member.bot or member.guild is None:
         return True
 
     try:
+        # создаём пользователя, если ещё нет
         get_or_create_user(member.id)
+        # сразу сохраняем юзернейм и ник
         update_discord_profile(member)
 
         text = f"{t('ru', 'choose_language')} / {t('en', 'choose_language')}"
@@ -441,9 +475,11 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
 
 
 async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
+    """Notify fallback channel if user's DM is blocked."""
     chan_id = Config.FALLBACK_CHANNEL_ID
     if not chan_id:
         return
+
     channel = bot.get_channel(chan_id)
     if channel is None:
         try:
@@ -451,7 +487,9 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
         except Exception as e:
             print(f"Cannot fetch fallback channel: {e}", file=sys.stderr)
             return
+
+    # проще всего — двуязычное сообщение
     await channel.send(
-        f"{member.mention}, enable direct messages so I can send your onboarding "
-        f"instructions. After enabling, please send `!onboarding` command in the server."
+        f"{member.mention}, enable direct messages so I can send your onboarding instructions. "
+        f"После этого, пожалуйста, отправьте команду `!onboarding` на сервере."
     )
