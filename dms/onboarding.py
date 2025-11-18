@@ -394,7 +394,7 @@ def _build_onboarding_message(member: discord.Member, lang: str) -> str:
         f"{t(lang, 'greeting').format(name=member.display_name)}\n\n"
         f"{Config.WELCOME_MESSAGE_ENG if lang == 'en' else Config.WELCOME_MESSAGE_RUS}\n\n"
         f"{t(lang, 'roles_header')}\n"
-        f"{_format_role_list()}\n\n"
+        f"{_format_role_list(lang)}\n\n"
         f"{t(lang, 'roles_hint')}\n\n"
         f"{t(lang, 'recruit_hint')}\n"
     )
@@ -453,5 +453,5 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             return
     await channel.send(
         f"{member.mention}, enable direct messages so I can send your onboarding "
-        f"instructions. After enabling, please send !onboarding command in the server."
+        f"instructions. After enabling, please send `!onboarding` command in the server."
     )
