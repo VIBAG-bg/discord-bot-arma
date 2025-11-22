@@ -487,14 +487,24 @@ class ApproveRecruitButton(discord.ui.Button):
                 f"Recruit {recruit.mention} approved by {interaction.user.mention}.", 
             )
         
+        db_user = get_or_create_user_from_member(recruit)
+        lang = (db_user.language or "en") if db_user else "en"
+
+        msg_en = (
+            "Congratulations! Your recruit application has been approved. Now you are a full member and got your member role! Welcome aboard!"
+        )
+        msg_ru = (
+            "Поздравляем! Ваша заявка рекрута была одобрена. Теперь вы полноценный участник и получили роль! Добро пожаловать в команду!"
+        )
+
         try:
-            await recruit.send(
-                "Congratulations! Your recruit application has been approved. Welcome aboard!"
-                if (recruit.language or "en") == "en"
-                else "Поздравляем! Ваша заявка рекрута была одобрена. Добро пожаловать в команду!"
-            )
-        except Exception:
-            pass
+            await recruit.send(msg_en if lang == "en" else msg_ru)
+        except discord.Forbidden:
+            # у чела закрыты ЛС
+            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
+        except Exception as e:
+            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
 
         await interaction.response.send_message(
         "Recruit approved, channels archived.",
@@ -559,13 +569,24 @@ class DenyRecruitButton(discord.ui.Button):
         # Если захочешь потом ЛС рекруту – тут просто добавишь
         # try: await recruit.send("...") except: pass
 
+        db_user = get_or_create_user_from_member(recruit)
+        lang = (db_user.language or "en") if db_user else "en"
+
+        msg_en = (
+            "Unfortunately, your recruit application has been rejected."
+        )
+        msg_ru = (
+            "К сожалению, ваша заявка рекрута была отклонена."
+        )
+
         try:
-            await recruit.send(
-                "Your recruit application has been rejected. " if (recruit.language or "en") == "en"
-                else "Ваша заявка рекрута была отклонена."
-            )
-        except Exception:
-            pass
+            await recruit.send(msg_en if lang == "en" else msg_ru)
+        except discord.Forbidden:
+            # у чела закрыты ЛС
+            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
+        except Exception as e:
+            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
 
         channel = guild.get_channel(view.text_channel_id)
 
@@ -573,7 +594,7 @@ class DenyRecruitButton(discord.ui.Button):
             f"Recruit {recruit.mention} rejected by {interaction.user.mention}.")
         
         await interaction.response.send_message(
-            "Recruit denied, channel is archived.",
+            "Recruit denied, channels archived.",
             ephemeral=True,
         )
 
