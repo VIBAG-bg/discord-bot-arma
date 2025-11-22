@@ -5,7 +5,7 @@ from typing import List, Optional
 from discord import Member
 
 from .db import SessionLocal
-from .models import User, SessionLocal
+from .models import User
 
 
 @contextmanager
