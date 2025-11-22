@@ -323,7 +323,7 @@ class RecruitModerationView(discord.ui.View):
         text_channel_id: int,
         voice_channel_id: int,
     ):
-        super().__init__(timeout=7 * 24 * 3600)  # неделя на нажатие
+        super().__init__(timeout=30 * 24 * 3600)  # месяц на нажатие
         self.guild_id = guild_id
         self.recruit_id = recruit_id
         self.text_channel_id = text_channel_id
