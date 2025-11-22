@@ -482,7 +482,10 @@ class RegisterRecruitButton(discord.ui.Button):
         embed.set_footer(text="Use this channel to schedule and run the interview.")
 
         try:
-            await text_ch.send(content=member.mention, embed=embed, allow_mentions=discord.AllowedMentions(users=True, roles=False, everyone=False ))
+            await text_ch.send(embed=embed)
+            await interaction.response.send_message(
+            f'Role "{member.mention}" added!',
+            delete_after=20)
         except Exception as e:
             print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
 
