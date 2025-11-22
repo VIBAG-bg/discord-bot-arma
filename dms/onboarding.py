@@ -47,7 +47,7 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
-        "recruit_embed_title": "Recruit ready for interview",
+        "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
     },
     "ru": {
@@ -78,7 +78,7 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
-        "recruit_embed_title": "Рекрут готов к собеседованию",
+        "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "ГОТОВ К СОБЕСЕДОВАНИЮ",
     },
 }
@@ -482,7 +482,7 @@ class RegisterRecruitButton(discord.ui.Button):
         embed.set_footer(text="Use this channel to schedule and run the interview.")
 
         try:
-            await text_ch.send(embed=embed)
+            await text_ch.send(content=member.mention, embed=embed, allow_mentions=discord.AllowedMentions(users=True, roles=False, everyone=False ))
         except Exception as e:
             print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
 
