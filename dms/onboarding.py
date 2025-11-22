@@ -125,7 +125,11 @@ class SteamLinkModal(discord.ui.Modal):
             lang = (user.language or "en") if user else "en"
 
             # строгая валидация SteamID64: 17 цифр, начинается с '7656119'
-            if not (steam_id.isdigit() and len(steam_id) == 17 and steam_id.startswith("7656119")):
+            if not (
+                steam_id.isdigit()
+                and len(steam_id) == 17
+                and steam_id.startswith("7656119")
+            ):
                 await interaction.response.send_message(
                     t(lang, "invalid_steam_link"),
                     ephemeral=True,
@@ -140,7 +144,6 @@ class SteamLinkModal(discord.ui.Modal):
                 ephemeral=True,
             )
         except Exception as e:
-            # логируем нормальную ошибку, чтобы не было "что-то пошло не так"
             print(f"[SteamLinkModal ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             try:
                 await interaction.response.send_message(
@@ -148,7 +151,6 @@ class SteamLinkModal(discord.ui.Modal):
                     ephemeral=True,
                 )
             except discord.InteractionResponded:
-                # на всякий случай, если уже ответили
                 pass
 
 
@@ -238,7 +240,9 @@ class RoleButton(discord.ui.Button):
             delete_after=20,
         )
 
+
 RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
+
 
 async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
     """
@@ -248,14 +252,11 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
     # 1) Категория
     category = guild.get_channel(Config.RECRUIT_CATEGORY_ID)
     if category is None or not isinstance(category, discord.CategoryChannel):
-        # если категории нет – лучше не продолжать, чтобы не плодить мусор в корне сервера
         raise RuntimeError("Recruit category is not configured correctly.")
 
     # 2) Пермишены
     overwrites = {
-        guild.default_role: discord.PermissionOverwrite(
-            view_channel=False
-        ),
+        guild.default_role: discord.PermissionOverwrite(view_channel=False),
         member: discord.PermissionOverwrite(
             view_channel=True,
             read_message_history=True,
@@ -277,7 +278,6 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
                 speak=True,
             )
 
-
     user = get_or_create_user_from_member(member)  # ORM user
     code = get_recruit_code(user)
 
@@ -296,7 +296,7 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
         overwrites=overwrites,
         reason=f"Recruit interview voice for {member}",
     )
-    # сохраняем ID каналов в БД
+
     set_recruit_channels(
         discord_id=member.id,
         text_id=text_channel.id,
@@ -306,8 +306,8 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
     return text_channel, voice_channel
 
 
-
 # ------------ RECRUIT MODERATION VIEW ------------
+
 
 class RecruitModerationView(discord.ui.View):
     """
@@ -329,7 +329,8 @@ class RecruitModerationView(discord.ui.View):
         self.text_channel_id = text_channel_id
         self.voice_channel_id = voice_channel_id
 
-        self.message_id: int | None = None  # можно сохранить ID сообщения с кнопками
+        # ID сообщения с эмбедом и кнопками
+        self.message_id: int | None = None
 
         self.add_item(ApproveRecruitButton())
         self.add_item(DenyRecruitButton())
@@ -358,7 +359,7 @@ class RecruitModerationView(discord.ui.View):
         if any(r.id in recruiter_ids for r in member.roles):
             return True
 
-        # 3) is_admin в БД (если у тебя флаг есть)
+        # 3) is_admin в БД
         db_user = get_or_create_user_from_member(member)
         if getattr(db_user, "is_admin", False):
             return True
@@ -372,7 +373,7 @@ class RecruitModerationView(discord.ui.View):
         reason: str,
         deny_access: bool,
     ):
-        """Общая логика: перенести/переименовать каналы и при необходимости закрыть доступ рекруту."""
+        """Перенести/переименовать каналы и при необходимости закрыть доступ рекруту."""
         text_ch = guild.get_channel(self.text_channel_id)
         voice_ch = guild.get_channel(self.voice_channel_id)
 
@@ -412,14 +413,12 @@ class RecruitModerationView(discord.ui.View):
                 )
 
     async def disable_buttons(self, interaction: discord.Interaction):
-        """Выключаем кнопки после решения."""
-        # выключаем все кнопки во view
+        """Выключаем кнопки после решения (Approve/Deny)."""
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
 
         try:
-            # нам нужно добраться до ИСХОДНОГО сообщения в текстовом канале
             guild = interaction.guild or interaction.client.get_guild(self.guild_id)
             if guild is None:
                 return
@@ -428,34 +427,27 @@ class RecruitModerationView(discord.ui.View):
             if not isinstance(channel, discord.TextChannel):
                 return
 
-            # если мы заранее сохранили message_id — используем его
             if self.message_id:
                 msg = await channel.fetch_message(self.message_id)
             else:
-                # fallback: попробуем отредактировать текущее сообщение
                 msg = interaction.message
 
             if msg:
                 await msg.edit(view=self)
         except Exception as e:
-            print(f"[RecruitModerationView.disable_buttons ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+            print(
+                f"[RecruitModerationView.disable_buttons ERROR] {type(e).__name__}: {e}",
+                file=sys.stderr,
+            )
 
-
-    # ---- Вынесенная логика APPROVE (твоя старая, почти без изменений) ----
+    # ---- Логика APPROVE ----
     async def process_approve(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.response.send_message(
-                "Guild not found.", ephemeral=True
-            )
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
-            await interaction.response.send_message(
-                "Recruit not found on the server.",
-                ephemeral=True,
-            )
             return
 
         # статус в БД
@@ -474,10 +466,11 @@ class RecruitModerationView(discord.ui.View):
             member_role = guild.get_role(member_role_id)
             if member_role and member_role not in recruit.roles:
                 await recruit.add_roles(
-                    member_role, reason="Recruit approved – promoted to member"
+                    member_role,
+                    reason="Recruit approved – promoted to member",
                 )
 
-        # архивируем каналы, отключая доступ рекруту
+        # архивируем каналы, закрываем доступ рекруту
         await self._archive_or_lock_channels(
             guild,
             recruit,
@@ -485,12 +478,14 @@ class RecruitModerationView(discord.ui.View):
             deny_access=True,
         )
 
+        # лог в канал
         channel = guild.get_channel(self.text_channel_id)
         if channel:
             await channel.send(
                 f"Recruit {recruit.mention} approved by {interaction.user.mention}."
             )
 
+        # DM рекруту
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
@@ -510,29 +505,17 @@ class RecruitModerationView(discord.ui.View):
         except Exception as e:
             print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
 
-        await interaction.response.send_message(
-            "Recruit approved, channels archived.",
-            ephemeral=True,
-        )
+        # выключаем кнопки на исходном сообщении
+        await self.disable_buttons(interaction)
 
-        # кнопки в исходном embed-е можно выключить,
-        # но здесь interaction.message — это окно подтверждения, так что трогать его не будем
-
-    # ---- Вынесенная логика DENY (твоя старая) ----
+    # ---- Логика DENY ----
     async def process_deny(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.response.send_message(
-                "Guild not found.", ephemeral=True
-            )
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
-            await interaction.response.send_message(
-                "Recruit not found on the server.",
-                ephemeral=True,
-            )
             return
 
         # статус в БД
@@ -545,7 +528,7 @@ class RecruitModerationView(discord.ui.View):
                 recruit_role, reason=f"Recruit rejected by {interaction.user}"
             )
 
-        # каналы: просто архив + закрыть доступ рекруту
+        # архивируем каналы, закрываем доступ рекруту
         await self._archive_or_lock_channels(
             guild,
             recruit,
@@ -556,12 +539,8 @@ class RecruitModerationView(discord.ui.View):
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        msg_en = (
-            "Unfortunately, your recruit application has been rejected."
-        )
-        msg_ru = (
-            "К сожалению, ваша заявка рекрута была отклонена."
-        )
+        msg_en = "Unfortunately, your recruit application has been rejected."
+        msg_ru = "К сожалению, ваша заявка рекрута была отклонена."
 
         try:
             await recruit.send(msg_en if lang == "en" else msg_ru)
@@ -576,13 +555,11 @@ class RecruitModerationView(discord.ui.View):
                 f"Recruit {recruit.mention} rejected by {interaction.user.mention}."
             )
 
-        await interaction.response.send_message(
-            "Recruit denied, channels archived.",
-            ephemeral=True,
-        )
+        await self.disable_buttons(interaction)
 
 
 # ------------ CONFIRMATION VIEWS ------------
+
 
 class ConfirmApproveView(discord.ui.View):
     def __init__(self, parent: RecruitModerationView, lang: str):
@@ -592,13 +569,11 @@ class ConfirmApproveView(discord.ui.View):
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.success)
     async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # второй клик – реальная логика
         await self.parent.process_approve(interaction)
-        # аккуратно гасим окно подтверждения
+        text = "Approved." if self.lang == "en" else "Одобрено."
         try:
-            text = "Approved." if self.lang == "en" else "Одобрено."
-            await interaction.message.edit(content=text, view=None)
-        except Exception:
+            await interaction.response.edit_message(content=text, view=None)
+        except discord.InteractionResponded:
             pass
         self.stop()
 
@@ -618,10 +593,10 @@ class ConfirmDenyView(discord.ui.View):
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.danger)
     async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.parent.process_deny(interaction)
+        text = "Denied." if self.lang == "en" else "Отклонено."
         try:
-            text = "Denied." if self.lang == "en" else "Отклонено."
-            await interaction.message.edit(content=text, view=None)
-        except Exception:
+            await interaction.response.edit_message(content=text, view=None)
+        except discord.InteractionResponded:
             pass
         self.stop()
 
@@ -643,7 +618,6 @@ class ApproveRecruitButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: RecruitModerationView = self.view  # type: ignore
 
-        # первая защита: кто жмёт кнопку
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
                 "You are not allowed to approve recruits.",
@@ -735,8 +709,6 @@ class DenyRecruitButton(discord.ui.Button):
         )
 
 
-
-
 # ------------ REGISTER RECRUIT BUTTON ------------
 
 
@@ -770,7 +742,7 @@ class RegisterRecruitButton(discord.ui.Button):
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
 
-         # проверяем статус рекрута по БД, а не по роли
+        # проверяем статус рекрута по БД, а не по роли
         status = (user.recruit_status or "pending").lower()
         if status in ("ready", "done"):
             await interaction.response.send_message(
@@ -780,7 +752,7 @@ class RegisterRecruitButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
-        
+
         # если у пользователя уже есть привязанные каналы рекрута, не создаём дубликаты
         if user.recruit_text_channel_id or user.recruit_voice_channel_id:
             await interaction.response.send_message(
@@ -790,7 +762,6 @@ class RegisterRecruitButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
-                
 
         # проверка Steam ID
         if not user.steam_id:
@@ -839,7 +810,6 @@ class RegisterRecruitButton(discord.ui.Button):
         try:
             text_ch, voice_ch = await create_recruit_channels(guild, member)
         except Exception as e:
-            # если не удалось создать каналы – хотя бы скажем модерам в логах
             print(f"[recruit channels ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             await interaction.response.send_message(
                 "Recruit role assigned, but interview channels could not be created. "
@@ -847,7 +817,6 @@ class RegisterRecruitButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
-        
 
         # обновим user (чтобы точно быть в курсе статуса/каналов)
         user = get_or_create_user_from_member(member)
@@ -867,7 +836,6 @@ class RegisterRecruitButton(discord.ui.Button):
             title=t(lang, "recruit_embed_title").format(name=member.display_name),
             color=discord.Color.gold(),
         )
-
 
         embed.add_field(
             name="Recruit code",
@@ -900,16 +868,15 @@ class RegisterRecruitButton(discord.ui.Button):
             )
 
         lang_name = {
-        "ru": "Русский",
-        "en": "English"
+            "ru": "Русский",
+            "en": "English",
         }.get(user.language, "English")
 
         embed.add_field(
-        name="Language",
-        value=lang_name,
-        inline=True,
+            name="Language",
+            value=lang_name,
+            inline=True,
         )
-
 
         embed.add_field(
             name="Status",
@@ -928,16 +895,16 @@ class RegisterRecruitButton(discord.ui.Button):
             text_channel_id=text_ch.id,
             voice_channel_id=voice_ch.id,
         )
- 
-        msg = await text_ch.send(content=content, embed=embed, view=mod_view, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
 
-        try:
-            msg
+        msg = await text_ch.send(
+            content=content,
+            embed=embed,
+            view=mod_view,
+            allowed_mentions=discord.AllowedMentions(users=True, roles=True),
+        )
 
-        except Exception as e:
-            print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
-
-        view.message_id = msg.id
+        # привязываем view к сообщению
+        mod_view.message_id = msg.id
 
         # ответ рекруту в DM-контексте (interaction – из лички)
         await interaction.response.send_message(
@@ -950,7 +917,6 @@ class RegisterRecruitButton(discord.ui.Button):
             ),
             ephemeral=True,
         )
-
 
 
 # ------------ STEAM LINK VIEW ------------
@@ -1028,10 +994,6 @@ class LanguageButton(discord.ui.Button):
 
 
 def _get_role_definitions_for_lang(lang: str):
-    """
-    Аккуратно достаём дефиниции ролей, не падая,
-    даже если в Config нет каких-то атрибутов.
-    """
     base = getattr(Config, "ROLE_DEFINITIONS", None)
     eng = getattr(Config, "ROLE_DEFINITIONS_ENG", None)
     rus = getattr(Config, "ROLE_DEFINITIONS_RUS", None)
@@ -1072,13 +1034,11 @@ def _build_steam_message(member: discord.Member, lang: str) -> str:
 
 async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lang: str):
     """Send roles DM + Steam DM after language selection."""
-    # 2-е сообщение: роли и рекрут
     await member.send(
         _build_onboarding_message(member, lang),
         view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id, lang=lang),
     )
 
-    # 3-е сообщение: про Steam + кнопка с модалкой
     await member.send(
         _build_steam_message(member, lang),
         view=SteamLinkView(),
@@ -1094,9 +1054,7 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
         return True
 
     try:
-        # создаём пользователя, если ещё нет
         get_or_create_user(member.id)
-        # сразу сохраняем юзернейм и ник
         update_discord_profile(member)
 
         text = f"{t('ru', 'choose_language')} / {t('en', 'choose_language')}"
@@ -1127,7 +1085,6 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             print(f"Cannot fetch fallback channel: {e}", file=sys.stderr)
             return
 
-    # проще всего — двуязычное сообщение
     await channel.send(
         f"{member.mention}, enable direct messages so I can send your onboarding instructions. "
         f"After this, please send the `!onboarding` command on the server."
