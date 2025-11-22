@@ -325,6 +325,17 @@ class RegisterRecruitButton(discord.ui.Button):
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
 
+         # проверяем статус рекрута по БД, а не по роли
+        status = (user.recruit_status or "pending").lower()
+        if status in ("ready", "done"):
+            await interaction.response.send_message(
+                "You have already applied as a recruit. Contact staff if something is wrong."
+                if lang == "en"
+                else "Ты уже зарегистрирован как рекрут. Если что-то не так, напиши рекрутеру.",
+                ephemeral=True,
+            )
+            return
+
         # проверка Steam ID
         if not user.steam_id:
             await interaction.response.send_message(
