@@ -329,6 +329,8 @@ class RecruitModerationView(discord.ui.View):
         self.text_channel_id = text_channel_id
         self.voice_channel_id = voice_channel_id
 
+        self.message_id: int | None = None  # можно сохранить ID сообщения с кнопками
+
         self.add_item(ApproveRecruitButton())
         self.add_item(DenyRecruitButton())
 
@@ -411,14 +413,33 @@ class RecruitModerationView(discord.ui.View):
 
     async def disable_buttons(self, interaction: discord.Interaction):
         """Выключаем кнопки после решения."""
+        # выключаем все кнопки во view
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
+
         try:
-            # это редактирует сообщение с embed-ом, а не окно подтверждения
-            await interaction.message.edit(view=self)
-        except Exception:
-            pass
+            # нам нужно добраться до ИСХОДНОГО сообщения в текстовом канале
+            guild = interaction.guild or interaction.client.get_guild(self.guild_id)
+            if guild is None:
+                return
+
+            channel = guild.get_channel(self.text_channel_id)
+            if not isinstance(channel, discord.TextChannel):
+                return
+
+            # если мы заранее сохранили message_id — используем его
+            if self.message_id:
+                msg = await channel.fetch_message(self.message_id)
+            else:
+                # fallback: попробуем отредактировать текущее сообщение
+                msg = interaction.message
+
+            if msg:
+                await msg.edit(view=self)
+        except Exception as e:
+            print(f"[RecruitModerationView.disable_buttons ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
 
     # ---- Вынесенная логика APPROVE (твоя старая, почти без изменений) ----
     async def process_approve(self, interaction: discord.Interaction):
@@ -908,12 +929,15 @@ class RegisterRecruitButton(discord.ui.Button):
             voice_channel_id=voice_ch.id,
         )
  
+        msg = await text_ch.send(content=content, embed=embed, view=mod_view, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
+
         try:
-            await text_ch.send(content=content, embed=embed, view=mod_view, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
+            msg
 
         except Exception as e:
             print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
 
+        view.message_id = msg.id
 
         # ответ рекруту в DM-контексте (interaction – из лички)
         await interaction.response.send_message(
