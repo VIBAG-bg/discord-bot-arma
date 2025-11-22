@@ -1,10 +1,11 @@
 # database/service.py
 from contextlib import contextmanager
 
+from typing import List, Optional
 from discord import Member
 
 from .db import SessionLocal
-from .models import User
+from .models import User, SessionLocal
 
 
 @contextmanager
@@ -122,3 +123,43 @@ def set_recruit_channels(discord_id: int, text_id: int | None, voice_id: int | N
 def get_recruit_code(user: User) -> str:
     """Генерируем код рекрута по его ID в формате R-0001, R-0002 и т.д."""
     return f"R-{user.id:04d}"
+
+
+def get_recruits_all() -> list[User]:
+    """Все пользователи, у которых recruit_status НЕ NULL."""
+    with SessionLocal() as session:
+        return (
+            session.query(User)
+            .filter(User.recruit_status.isnot(None))
+            .order_by(User.id)
+            .all()
+        )
+
+def get_recruits_by_status(status: str) -> list[User]:
+    """Рекруты с конкретным статусом: pending / ready / done / rejected."""
+    status = (status or "").lower()
+    with SessionLocal() as session:
+        return (
+            session.query(User)
+            .filter(User.recruit_status == status)
+            .order_by(User.id)
+            .all()
+        )
+
+def get_user_by_discord_id(discord_id: int) -> Optional[User]:
+    """Пользователь по discord_id."""
+    with SessionLocal() as session:
+        return (
+            session.query(User)
+            .filter(User.discord_id == discord_id)
+            .one_or_none()
+        )
+
+def get_user_by_username(username: str) -> Optional[User]:
+    """Пользователь по Discord username (sillygilly3544 и т.п.)."""
+    with SessionLocal() as session:
+        return (
+            session.query(User)
+            .filter(User.username == username)
+            .one_or_none()
+        )

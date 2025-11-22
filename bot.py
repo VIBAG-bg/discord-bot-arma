@@ -88,6 +88,7 @@ async def load_extensions():
         "commands.moderation",
         "commands.general",
         "commands.onboarding",
+        "commands.recruits",
     ]
     for ext in extensions:
         try:
