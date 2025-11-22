@@ -480,9 +480,28 @@ class ApproveRecruitButton(discord.ui.Button):
             deny_access=True,
         )
 
+        channel = guild.get_channel(view.text_channel_id)
+
+        if channel:
+            await channel.send(
+                f"Recruit {recruit.mention} approved by {interaction.user.mention}.", 
+            )
+        
+        try:
+            await recruit.send(
+                "Congratulations! Your recruit application has been approved. Welcome aboard!"
+                if (recruit.language or "en") == "en"
+                else "Поздравляем! Ваша заявка рекрута была одобрена. Добро пожаловать в команду!"
+            )
+        except Exception:
+            pass
+
         await interaction.response.send_message(
-            f"Recruit {recruit.mention} approved.", ephemeral=True
-        )
+        "Recruit approved, channels archived.",
+        ephemeral=True,
+       )
+
+
         await view.disable_buttons(interaction)
 
 
@@ -540,9 +559,24 @@ class DenyRecruitButton(discord.ui.Button):
         # Если захочешь потом ЛС рекруту – тут просто добавишь
         # try: await recruit.send("...") except: pass
 
+        try:
+            await recruit.send(
+                "Your recruit application has been rejected. " if (recruit.language or "en") == "en"
+                else "Ваша заявка рекрута была отклонена."
+            )
+        except Exception:
+            pass
+
+        channel = guild.get_channel(view.text_channel_id)
+
+        await channel.send(
+            f"Recruit {recruit.mention} rejected by {interaction.user.mention}.")
+        
         await interaction.response.send_message(
-            f"Recruit {recruit.mention} rejected.", ephemeral=True
+            "Recruit denied, channel is archived.",
+            ephemeral=True,
         )
+
         await view.disable_buttons(interaction)
 
 
