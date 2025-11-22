@@ -47,6 +47,8 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
+        "recruit_embed_title": "Recruit ready for interview",
+        "recruit_embed_status_ready": "READY FOR INTERVIEW",
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -76,6 +78,8 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
+        "recruit_embed_title": "Рекрут готов к собеседованию",
+        "recruit_embed_status_ready": "ГОТОВ К СОБЕСЕДОВАНИЮ",
     },
 }
 
@@ -302,6 +306,10 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
     return text_channel, voice_channel
 
 
+
+# ------------ REGISTER RECRUIT BUTTON ------------
+
+
 class RegisterRecruitButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -409,6 +417,75 @@ class RegisterRecruitButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
+        
+        # обновим user (чтобы точно быть в курсе статуса/каналов)
+        user = get_or_create_user_from_member(member)
+        lang = user.language or "en"
+
+        # Стим-ссылка
+        if getattr(user, "steam_url", None):
+            steam_url = user.steam_url
+        elif user.steam_id:
+            steam_url = f"https://steamcommunity.com/profiles/{user.steam_id}"
+        else:
+            steam_url = None
+
+        recruit_code = get_recruit_code(user)
+
+        embed = discord.Embed(
+            title=t(lang, "recruit_embed_title"),
+            color=discord.Color.gold(),
+        )
+
+        embed.add_field(
+            name="Recruit code",
+            value=recruit_code,
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Discord",
+            value=(
+                f"{member.mention}\n"
+                f"Display name: **{member.display_name}**\n"
+                f"Username: `{member.name}`\n"
+                f"ID: `{member.id}`"
+            ),
+            inline=False,
+        )
+
+        if steam_url:
+            embed.add_field(
+                name="Steam",
+                value=f"ID: `{user.steam_id}`\n[Open profile]({steam_url})",
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="Steam",
+                value="Not linked",
+                inline=False,
+            )
+
+        embed.add_field(
+            name="Language",
+            value=user.language or "en",
+            inline=True,
+        )
+
+        embed.add_field(
+            name="Status",
+            value=t(lang, "recruit_embed_status_ready"),
+            inline=True,
+        )
+
+        embed.set_footer(text="Use this channel to schedule and run the interview.")
+
+        try:
+            await text_ch.send(embed=embed)
+        except Exception as e:
+            print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
 
         # ответ рекруту в DM-контексте (interaction – из лички)
         await interaction.response.send_message(
