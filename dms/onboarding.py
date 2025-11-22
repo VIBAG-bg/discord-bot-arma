@@ -415,9 +415,200 @@ class RecruitModerationView(discord.ui.View):
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
         try:
+            # это редактирует сообщение с embed-ом, а не окно подтверждения
             await interaction.message.edit(view=self)
         except Exception:
             pass
+
+    # ---- Вынесенная логика APPROVE (твоя старая, почти без изменений) ----
+    async def process_approve(self, interaction: discord.Interaction):
+        guild = interaction.guild or interaction.client.get_guild(self.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                "Guild not found.", ephemeral=True
+            )
+            return
+
+        recruit = guild.get_member(self.recruit_id)
+        if recruit is None:
+            await interaction.response.send_message(
+                "Recruit not found on the server.",
+                ephemeral=True,
+            )
+            return
+
+        # статус в БД
+        set_recruit_status(self.recruit_id, "done")
+
+        # снимаем рекрут-роль
+        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
+        if recruit_role and recruit_role in recruit.roles:
+            await recruit.remove_roles(
+                recruit_role, reason=f"Recruit approved by {interaction.user}"
+            )
+
+        # выдаём основную роль участника (если настроена)
+        member_role_id = int(getattr(Config, "MEMBER_ROLE_ID", 0) or 0)
+        if member_role_id:
+            member_role = guild.get_role(member_role_id)
+            if member_role and member_role not in recruit.roles:
+                await recruit.add_roles(
+                    member_role, reason="Recruit approved – promoted to member"
+                )
+
+        # архивируем каналы, отключая доступ рекруту
+        await self._archive_or_lock_channels(
+            guild,
+            recruit,
+            reason=f"Recruit approved by {interaction.user}",
+            deny_access=True,
+        )
+
+        channel = guild.get_channel(self.text_channel_id)
+        if channel:
+            await channel.send(
+                f"Recruit {recruit.mention} approved by {interaction.user.mention}."
+            )
+
+        db_user = get_or_create_user_from_member(recruit)
+        lang = (db_user.language or "en") if db_user else "en"
+
+        msg_en = (
+            "Congratulations! Your recruit application has been approved. "
+            "Now you are a full member and got your member role! Welcome aboard!"
+        )
+        msg_ru = (
+            "Поздравляем! Ваша заявка рекрута была одобрена. "
+            "Теперь вы полноценный участник и получили роль! Добро пожаловать в команду!"
+        )
+
+        try:
+            await recruit.send(msg_en if lang == "en" else msg_ru)
+        except discord.Forbidden:
+            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
+        except Exception as e:
+            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
+        await interaction.response.send_message(
+            "Recruit approved, channels archived.",
+            ephemeral=True,
+        )
+
+        # кнопки в исходном embed-е можно выключить,
+        # но здесь interaction.message — это окно подтверждения, так что трогать его не будем
+
+    # ---- Вынесенная логика DENY (твоя старая) ----
+    async def process_deny(self, interaction: discord.Interaction):
+        guild = interaction.guild or interaction.client.get_guild(self.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                "Guild not found.", ephemeral=True
+            )
+            return
+
+        recruit = guild.get_member(self.recruit_id)
+        if recruit is None:
+            await interaction.response.send_message(
+                "Recruit not found on the server.",
+                ephemeral=True,
+            )
+            return
+
+        # статус в БД
+        set_recruit_status(self.recruit_id, "rejected")
+
+        # снимаем рекрут-роль
+        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
+        if recruit_role and recruit_role in recruit.roles:
+            await recruit.remove_roles(
+                recruit_role, reason=f"Recruit rejected by {interaction.user}"
+            )
+
+        # каналы: просто архив + закрыть доступ рекруту
+        await self._archive_or_lock_channels(
+            guild,
+            recruit,
+            reason=f"Recruit rejected by {interaction.user}",
+            deny_access=True,
+        )
+
+        db_user = get_or_create_user_from_member(recruit)
+        lang = (db_user.language or "en") if db_user else "en"
+
+        msg_en = (
+            "Unfortunately, your recruit application has been rejected."
+        )
+        msg_ru = (
+            "К сожалению, ваша заявка рекрута была отклонена."
+        )
+
+        try:
+            await recruit.send(msg_en if lang == "en" else msg_ru)
+        except discord.Forbidden:
+            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
+        except Exception as e:
+            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
+        channel = guild.get_channel(self.text_channel_id)
+        if channel:
+            await channel.send(
+                f"Recruit {recruit.mention} rejected by {interaction.user.mention}."
+            )
+
+        await interaction.response.send_message(
+            "Recruit denied, channels archived.",
+            ephemeral=True,
+        )
+
+
+# ------------ CONFIRMATION VIEWS ------------
+
+class ConfirmApproveView(discord.ui.View):
+    def __init__(self, parent: RecruitModerationView, lang: str):
+        super().__init__(timeout=60)
+        self.parent = parent
+        self.lang = lang
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.success)
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # второй клик – реальная логика
+        await self.parent.process_approve(interaction)
+        # аккуратно гасим окно подтверждения
+        try:
+            text = "Approved." if self.lang == "en" else "Одобрено."
+            await interaction.message.edit(content=text, view=None)
+        except Exception:
+            pass
+        self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.danger)
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
+        text = "Cancelled." if self.lang == "en" else "Отменено."
+        await interaction.response.edit_message(content=text, view=None)
+        self.stop()
+
+
+class ConfirmDenyView(discord.ui.View):
+    def __init__(self, parent: RecruitModerationView, lang: str):
+        super().__init__(timeout=60)
+        self.parent = parent
+        self.lang = lang
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.danger)
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.parent.process_deny(interaction)
+        try:
+            text = "Denied." if self.lang == "en" else "Отклонено."
+            await interaction.message.edit(content=text, view=None)
+        except Exception:
+            pass
+        self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
+        text = "Cancelled." if self.lang == "en" else "Отменено."
+        await interaction.response.edit_message(content=text, view=None)
+        self.stop()
 
 
 class ApproveRecruitButton(discord.ui.Button):
@@ -431,6 +622,7 @@ class ApproveRecruitButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: RecruitModerationView = self.view  # type: ignore
 
+        # первая защита: кто жмёт кнопку
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
                 "You are not allowed to approve recruits.",
@@ -453,66 +645,22 @@ class ApproveRecruitButton(discord.ui.Button):
             )
             return
 
-        # статус в БД
-        set_recruit_status(view.recruit_id, "done")
-
-        # снимаем рекрут-роль
-        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
-        if recruit_role and recruit_role in recruit.roles:
-            await recruit.remove_roles(
-                recruit_role, reason=f"Recruit approved by {interaction.user}"
-            )
-
-        # выдаём основную роль участника (если настроена)
-        member_role_id = int(getattr(Config, "MEMBER_ROLE_ID", 0) or 0)
-        if member_role_id:
-            member_role = guild.get_role(member_role_id)
-            if member_role and member_role not in recruit.roles:
-                await recruit.add_roles(
-                    member_role, reason="Recruit approved – promoted to member"
-                )
-
-        # архивируем каналы, отключая доступ рекруту
-        await view._archive_or_lock_channels(
-            guild,
-            recruit,
-            reason=f"Recruit approved by {interaction.user}",
-            deny_access=True,
-        )
-
-        channel = guild.get_channel(view.text_channel_id)
-
-        if channel:
-            await channel.send(
-                f"Recruit {recruit.mention} approved by {interaction.user.mention}.", 
-            )
-        
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        msg_en = (
-            "Congratulations! Your recruit application has been approved. Now you are a full member and got your member role! Welcome aboard!"
-        )
-        msg_ru = (
-            "Поздравляем! Ваша заявка рекрута была одобрена. Теперь вы полноценный участник и получили роль! Добро пожаловать в команду!"
+        question = (
+            f"Are you sure you want to **APPROVE** {recruit.mention}?"
+            if lang == "en"
+            else f"Вы уверены, что хотите **ОДОБРИТЬ** {recruit.mention}?"
         )
 
-        try:
-            await recruit.send(msg_en if lang == "en" else msg_ru)
-        except discord.Forbidden:
-            # у чела закрыты ЛС
-            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
-        except Exception as e:
-            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
-
+        confirm_view = ConfirmApproveView(parent=view, lang=lang)
 
         await interaction.response.send_message(
-        "Recruit approved, channels archived.",
-        ephemeral=True,
-       )
-
-
-        await view.disable_buttons(interaction)
+            question,
+            view=confirm_view,
+            ephemeral=True,
+        )
 
 
 class DenyRecruitButton(discord.ui.Button):
@@ -548,57 +696,22 @@ class DenyRecruitButton(discord.ui.Button):
             )
             return
 
-        # статус в БД
-        set_recruit_status(view.recruit_id, "rejected")
-
-        # снимаем рекрут-роль
-        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
-        if recruit_role and recruit_role in recruit.roles:
-            await recruit.remove_roles(
-                recruit_role, reason=f"Recruit rejected by {interaction.user}"
-            )
-
-        # каналы: можно просто закрыть рекруту доступ и оставить историю
-        await view._archive_or_lock_channels(
-            guild,
-            recruit,
-            reason=f"Recruit rejected by {interaction.user}",
-            deny_access=True,
-        )
-
-        # Если захочешь потом ЛС рекруту – тут просто добавишь
-        # try: await recruit.send("...") except: pass
-
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        msg_en = (
-            "Unfortunately, your recruit application has been rejected."
+        question = (
+            f"Are you sure you want to **DENY** {recruit.mention}?"
+            if lang == "en"
+            else f"Вы уверены, что хотите **ОТКЛОНИТЬ** {recruit.mention}?"
         )
-        msg_ru = (
-            "К сожалению, ваша заявка рекрута была отклонена."
-        )
 
-        try:
-            await recruit.send(msg_en if lang == "en" else msg_ru)
-        except discord.Forbidden:
-            # у чела закрыты ЛС
-            print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
-        except Exception as e:
-            print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+        confirm_view = ConfirmDenyView(parent=view, lang=lang)
 
-
-        channel = guild.get_channel(view.text_channel_id)
-
-        await channel.send(
-            f"Recruit {recruit.mention} rejected by {interaction.user.mention}.")
-        
         await interaction.response.send_message(
-            "Recruit denied, channels archived.",
+            question,
+            view=confirm_view,
             ephemeral=True,
         )
-
-        await view.disable_buttons(interaction)
 
 
 
