@@ -1,5 +1,6 @@
 # dms/onboarding.py
 
+from enum import member
 import sys
 import discord
 from discord.ext import commands
@@ -79,7 +80,7 @@ LANGS = {
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
-        "recruit_embed_status_ready": "ГОТОВ К СОБЕСЕДОВАНИЮ",
+        "recruit_embed_status_ready": "READY FOR INTERVIEW",
     },
 }
 
@@ -433,7 +434,7 @@ class RegisterRecruitButton(discord.ui.Button):
         recruit_code = get_recruit_code(user)
 
         embed = discord.Embed(
-            title=t(lang, "recruit_embed_title"),
+            f"title={t(lang, "recruit_embed_title")}".format(name=member.display_name),
             color=discord.Color.gold(),
         )
 
@@ -481,25 +482,11 @@ class RegisterRecruitButton(discord.ui.Button):
 
         embed.set_footer(text="Use this channel to schedule and run the interview.")
 
+        role = member.guild.get_role(Config.RECRUITER_ROLE_ID)
+ 
         try:
-            await text_ch.send(content=member.mention, embed=embed, allowed_mentions=discord.AllowedMentions(users=True))
-            
-            recruiter_mentions = [
-            role.mention for role in guild.roles
-            if role.id in getattr(Config, "RECRUITER_ROLE_IDS", [])
-            ]
-
-
-            recruiters_text = " ".join(recruiter_mentions) if recruiter_mentions else ""
-
-            await text_ch.send(
-                content=(
-                    f"{member.mention}, welcome! Please wait for a recruiter ({recruiters_text}) to assist you."
-                    if lang == "en" else
-                    f"{member.mention}, добро пожаловать! Пожалуйста, подождите рекрутера ({recruiters_text})."
-                ),
-                allowed_mentions=discord.AllowedMentions(users=True, roles=True)
-            )
+            content = f"{member.mention} {role.mention}" if role else member.mention
+            await text_ch.send(content=content, embed=embed, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
 
         except Exception as e:
             print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
