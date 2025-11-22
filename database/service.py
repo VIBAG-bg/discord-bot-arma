@@ -106,6 +106,16 @@ def set_recruit_status(discord_id: int, status: str) -> None:
         else:
             user.recruit_status = status
 
+def set_recruit_channels(discord_id: int, text_id: int | None, voice_id: int | None) -> None:
+    """Сохраняем или обновляем ID каналов рекрута для пользователя."""
+    with get_session() as db:
+        user = db.query(User).filter_by(discord_id=discord_id).first()
+        if not user:
+            return
+
+        user.recruit_text_channel_id = text_id
+        user.recruit_voice_channel_id = voice_id
+
 
 def get_recruit_code(user: User) -> str:
     """Генерируем код рекрута по его ID в формате R-0001, R-0002 и т.д."""

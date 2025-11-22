@@ -13,6 +13,7 @@ from database.service import (
     update_discord_profile,
     set_recruit_status,
     get_recruit_code,
+    set_recruit_channels,
 )
 
 # ------------ LOCALIZATION ------------
@@ -291,6 +292,12 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
         overwrites=overwrites,
         reason=f"Recruit interview voice for {member}",
     )
+    # сохраняем ID каналов в БД
+    set_recruit_channels(
+        discord_id=member.id,
+        text_id=text_channel.id,
+        voice_id=voice_channel.id,
+    )
 
     return text_channel, voice_channel
 
@@ -335,6 +342,17 @@ class RegisterRecruitButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
+        
+        # если у пользователя уже есть привязанные каналы рекрута, не создаём дубликаты
+        if user.recruit_text_channel_id or user.recruit_voice_channel_id:
+            await interaction.response.send_message(
+                "You have already applied as a recruit. Contact staff if something is wrong."
+                if lang == "en"
+                else "Ты уже зарегистрирован как рекрут. Если что-то не так, напиши рекрутерам.",
+                ephemeral=True,
+            )
+            return
+                
 
         # проверка Steam ID
         if not user.steam_id:
