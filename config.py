@@ -107,6 +107,13 @@ class Config:
     RECRUITER_ROLE_ID: int = int(os.getenv("RECRUITER_ROLE_ID") or "0")
     RECRUIT_CATEGORY_ID: int = int(os.getenv("RECRUIT_CATEGORY_ID") or "0")
 
+    # основная роль участника, если хочешь её выдавать после approve
+    MEMBER_ROLE_ID: int = int(os.getenv("MEMBER_ROLE_ID", "0"))
+
+    # категория для архива рекрутов (необязательно, можно оставить 0)
+    RECRUIT_ARCHIVE_CATEGORY_ID: int = int(os.getenv("RECRUIT_ARCHIVE_CATEGORY_ID", "0"))
+
+
 
     @staticmethod
     def validate() -> bool:

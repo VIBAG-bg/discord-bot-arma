@@ -307,6 +307,247 @@ async def create_recruit_channels(guild: discord.Guild, member: discord.Member):
 
 
 
+# ------------ RECRUIT MODERATION VIEW ------------
+
+class RecruitModerationView(discord.ui.View):
+    """
+    Кнопки для рекрутеров / модераторов:
+    - Approve: принять рекрута, выдать основную роль, снять рекрут-роль, архивнуть канал
+    - Deny: отклонить, снять рекрут-роль, закрыть доступ
+    """
+
+    def __init__(
+        self,
+        guild_id: int,
+        recruit_id: int,
+        text_channel_id: int,
+        voice_channel_id: int,
+    ):
+        super().__init__(timeout=7 * 24 * 3600)  # неделя на нажатие
+        self.guild_id = guild_id
+        self.recruit_id = recruit_id
+        self.text_channel_id = text_channel_id
+        self.voice_channel_id = voice_channel_id
+
+        self.add_item(ApproveRecruitButton())
+        self.add_item(DenyRecruitButton())
+
+    async def check_moderator(self, interaction: discord.Interaction) -> bool:
+        """Проверяем, что жмёт рекрутер / модератор / админ / is_admin в БД."""
+        guild = interaction.guild
+        if guild is None:
+            guild = interaction.client.get_guild(self.guild_id)
+        if guild is None:
+            return False
+
+        member = guild.get_member(interaction.user.id)
+        if member is None:
+            return False
+
+        # 1) админы сервера
+        if member.guild_permissions.administrator or member.guild_permissions.manage_guild:
+            return True
+
+        # 2) роль рекрутёра
+        recruiter_ids = set(getattr(Config, "RECRUITER_ROLE_IDS", []))
+        if getattr(Config, "RECRUITER_ROLE_ID", 0):
+            recruiter_ids.add(Config.RECRUITER_ROLE_ID)
+
+        if any(r.id in recruiter_ids for r in member.roles):
+            return True
+
+        # 3) is_admin в БД (если у тебя флаг есть)
+        db_user = get_or_create_user_from_member(member)
+        if getattr(db_user, "is_admin", False):
+            return True
+
+        return False
+
+    async def _archive_or_lock_channels(
+        self,
+        guild: discord.Guild,
+        recruit: discord.Member,
+        reason: str,
+        deny_access: bool,
+    ):
+        """Общая логика: перенести/переименовать каналы и при необходимости закрыть доступ рекруту."""
+        text_ch = guild.get_channel(self.text_channel_id)
+        voice_ch = guild.get_channel(self.voice_channel_id)
+
+        archive_cat = None
+        archive_cat_id = int(getattr(Config, "RECRUIT_ARCHIVE_CATEGORY_ID", 0) or 0)
+        if archive_cat_id:
+            ch = guild.get_channel(archive_cat_id)
+            if isinstance(ch, discord.CategoryChannel):
+                archive_cat = ch
+
+        # текстовый канал
+        if isinstance(text_ch, discord.TextChannel):
+            new_name = f"{text_ch.name}-archived"
+            await text_ch.edit(
+                name=new_name[:100],
+                category=archive_cat or text_ch.category,
+                reason=reason,
+            )
+            if deny_access:
+                await text_ch.set_permissions(
+                    recruit,
+                    overwrite=discord.PermissionOverwrite(view_channel=False),
+                )
+
+        # голосовой канал
+        if isinstance(voice_ch, discord.VoiceChannel):
+            new_name = f"{voice_ch.name}-archived"
+            await voice_ch.edit(
+                name=new_name[:100],
+                category=archive_cat or voice_ch.category,
+                reason=reason,
+            )
+            if deny_access:
+                await voice_ch.set_permissions(
+                    recruit,
+                    overwrite=discord.PermissionOverwrite(view_channel=False),
+                )
+
+    async def disable_buttons(self, interaction: discord.Interaction):
+        """Выключаем кнопки после решения."""
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+        try:
+            await interaction.message.edit(view=self)
+        except Exception:
+            pass
+
+
+class ApproveRecruitButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Approve",
+            style=discord.ButtonStyle.success,
+            custom_id="recruit_approve",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        view: RecruitModerationView = self.view  # type: ignore
+
+        if not await view.check_moderator(interaction):
+            await interaction.response.send_message(
+                "You are not allowed to approve recruits.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild or interaction.client.get_guild(view.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                "Guild not found.", ephemeral=True
+            )
+            return
+
+        recruit = guild.get_member(view.recruit_id)
+        if recruit is None:
+            await interaction.response.send_message(
+                "Recruit not found on the server.",
+                ephemeral=True,
+            )
+            return
+
+        # статус в БД
+        set_recruit_status(view.recruit_id, "done")
+
+        # снимаем рекрут-роль
+        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
+        if recruit_role and recruit_role in recruit.roles:
+            await recruit.remove_roles(
+                recruit_role, reason=f"Recruit approved by {interaction.user}"
+            )
+
+        # выдаём основную роль участника (если настроена)
+        member_role_id = int(getattr(Config, "MEMBER_ROLE_ID", 0) or 0)
+        if member_role_id:
+            member_role = guild.get_role(member_role_id)
+            if member_role and member_role not in recruit.roles:
+                await recruit.add_roles(
+                    member_role, reason="Recruit approved – promoted to member"
+                )
+
+        # архивируем каналы, отключая доступ рекруту
+        await view._archive_or_lock_channels(
+            guild,
+            recruit,
+            reason=f"Recruit approved by {interaction.user}",
+            deny_access=True,
+        )
+
+        await interaction.response.send_message(
+            f"Recruit {recruit.mention} approved.", ephemeral=True
+        )
+        await view.disable_buttons(interaction)
+
+
+class DenyRecruitButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Deny",
+            style=discord.ButtonStyle.danger,
+            custom_id="recruit_deny",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        view: RecruitModerationView = self.view  # type: ignore
+
+        if not await view.check_moderator(interaction):
+            await interaction.response.send_message(
+                "You are not allowed to deny recruits.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild or interaction.client.get_guild(view.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                "Guild not found.", ephemeral=True
+            )
+            return
+
+        recruit = guild.get_member(view.recruit_id)
+        if recruit is None:
+            await interaction.response.send_message(
+                "Recruit not found on the server.",
+                ephemeral=True,
+            )
+            return
+
+        # статус в БД
+        set_recruit_status(view.recruit_id, "rejected")
+
+        # снимаем рекрут-роль
+        recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
+        if recruit_role and recruit_role in recruit.roles:
+            await recruit.remove_roles(
+                recruit_role, reason=f"Recruit rejected by {interaction.user}"
+            )
+
+        # каналы: можно просто закрыть рекруту доступ и оставить историю
+        await view._archive_or_lock_channels(
+            guild,
+            recruit,
+            reason=f"Recruit rejected by {interaction.user}",
+            deny_access=True,
+        )
+
+        # Если захочешь потом ЛС рекруту – тут просто добавишь
+        # try: await recruit.send("...") except: pass
+
+        await interaction.response.send_message(
+            f"Recruit {recruit.mention} rejected.", ephemeral=True
+        )
+        await view.disable_buttons(interaction)
+
+
+
+
 # ------------ REGISTER RECRUIT BUTTON ------------
 
 
@@ -418,6 +659,7 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
         
+
         # обновим user (чтобы точно быть в курсе статуса/каналов)
         user = get_or_create_user_from_member(member)
         lang = user.language or "en"
@@ -468,11 +710,17 @@ class RegisterRecruitButton(discord.ui.Button):
                 inline=False,
             )
 
+        lang_name = {
+        "ru": "Русский",
+        "en": "English"
+        }.get(user.language, "English")
+
         embed.add_field(
-            name="Language",
-            value=user.language or "en",
-            inline=True,
+        name="Language",
+        value=lang_name,
+        inline=True,
         )
+
 
         embed.add_field(
             name="Status",
@@ -484,9 +732,16 @@ class RegisterRecruitButton(discord.ui.Button):
 
         role = member.guild.get_role(Config.RECRUITER_ROLE_ID)
         content = f"{member.mention} {role.mention}" if role else member.mention
+
+        mod_view = RecruitModerationView(
+            guild_id=guild.id,
+            recruit_id=member.id,
+            text_channel_id=text_ch.id,
+            voice_channel_id=voice_ch.id,
+        )
  
         try:
-            await text_ch.send(content=content, embed=embed, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
+            await text_ch.send(content=content, embed=embed, view=mod_view, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
 
         except Exception as e:
             print(f"[RecruitEmbed ERROR] {type(e).__name__}: {e}", file=sys.stderr)
