@@ -18,3 +18,6 @@ class User(Base):
     recruit_status = Column(String(20), default="pending", nullable=False)
     is_admin = Column(Boolean, nullable=False, server_default="false")
 
+    recruit_text_channel_id = Column(BigInteger, nullable=True)
+    recruit_voice_channel_id = Column(BigInteger, nullable=True)
+

@@ -104,9 +104,9 @@ class Config:
         },
     ]
 
-    RECRUITER_ROLE_ID = int(os.getenv("RECRUITER_ROLE_ID"))
-    
-    RECRUIT_CATEGORY_ID = int(os.getenv("RECRUIT_CATEGORY_ID"))
+    RECRUITER_ROLE_ID: int = int(os.getenv("RECRUITER_ROLE_ID") or "0")
+    RECRUIT_CATEGORY_ID: int = int(os.getenv("RECRUIT_CATEGORY_ID") or "0")
+
 
     @staticmethod
     def validate() -> bool:
