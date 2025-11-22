@@ -110,11 +110,13 @@ def set_recruit_channels(discord_id: int, text_id: int | None, voice_id: int | N
     """Сохраняем или обновляем ID каналов рекрута для пользователя."""
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=discord_id).first()
-        if not user:
-            return
+        if user is None:
+            user = User(discord_id=discord_id)
+            db.add(user)
 
         user.recruit_text_channel_id = text_id
         user.recruit_voice_channel_id = voice_id
+        db.flush()
 
 
 def get_recruit_code(user: User) -> str:

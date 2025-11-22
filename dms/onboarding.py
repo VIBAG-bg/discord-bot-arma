@@ -1,6 +1,5 @@
 # dms/onboarding.py
 
-from enum import member
 import sys
 import discord
 from discord.ext import commands
@@ -434,9 +433,10 @@ class RegisterRecruitButton(discord.ui.Button):
         recruit_code = get_recruit_code(user)
 
         embed = discord.Embed(
-            f"title={t(lang, "recruit_embed_title")}".format(name=member.display_name),
+            title=t(lang, "recruit_embed_title").format(name=member.display_name),
             color=discord.Color.gold(),
         )
+
 
         embed.add_field(
             name="Recruit code",
@@ -483,9 +483,9 @@ class RegisterRecruitButton(discord.ui.Button):
         embed.set_footer(text="Use this channel to schedule and run the interview.")
 
         role = member.guild.get_role(Config.RECRUITER_ROLE_ID)
+        content = f"{member.mention} {role.mention}" if role else member.mention
  
         try:
-            content = f"{member.mention} {role.mention}" if role else member.mention
             await text_ch.send(content=content, embed=embed, allowed_mentions=discord.AllowedMentions(users=True, roles=True))
 
         except Exception as e:
