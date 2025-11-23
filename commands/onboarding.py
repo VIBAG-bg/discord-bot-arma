@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from dms.onboarding import send_onboarding_dm
+from dms.onboarding_flow import send_onboarding_dm
 
 
 class Onboarding(commands.Cog):

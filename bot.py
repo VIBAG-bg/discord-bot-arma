@@ -8,11 +8,17 @@ from discord.ext import commands
 import asyncio
 import sys
 from config import Config
-from dms.onboarding import RoleSelectionView, send_onboarding_dm, notify_dm_disabled
+from dms.steam_link import SteamLinkView
+from dms.recruit_channels import create_recruit_channels
+from dms.recruit_moderation import send_recruit_moderation_embed
 from commands.help import EmbedHelpCommand
 from database.db import Base, engine
 from database import models
-from database.service import get_or_create_user
+from database.service import (
+    get_or_create_user_from_member,
+    update_discord_profile,
+    set_recruit_status,
+)
 
 
 # Configure bot intents
@@ -80,6 +86,93 @@ async def on_command_error(ctx, error):
     else:
         print(f"Error: {error}", file=sys.stderr)
         await ctx.send("An error occurred while executing the command.")
+
+
+@bot.event
+async def on_member_update(before: discord.Member, after: discord.Member):
+    if before.bot or after.bot:
+        return
+
+    guild = after.guild
+    recruit_role = guild.get_role(Config.RECRUIT_ROLE_ID)
+    if not recruit_role:
+        return
+
+    had_recruit = recruit_role in before.roles
+    has_recruit = recruit_role in after.roles
+
+    if had_recruit or not has_recruit:
+        return
+
+    user = get_or_create_user_from_member(after)
+    update_discord_profile(after)
+    lang = user.language or "en"
+
+    text_ch = None
+    voice_ch = None
+
+    if getattr(user, "recruit_text_channel_id", None):
+        ch = guild.get_channel(user.recruit_text_channel_id)
+        if isinstance(ch, discord.TextChannel):
+            text_ch = ch
+
+    if getattr(user, "recruit_voice_channel_id", None):
+        ch = guild.get_channel(user.recruit_voice_channel_id)
+        if isinstance(ch, discord.VoiceChannel):
+            voice_ch = ch
+
+    if text_ch is None or voice_ch is None:
+        try:
+            text_ch, voice_ch = await create_recruit_channels(guild, after)
+        except Exception as e:
+            print(
+                f"[Recruit auto ERROR] Cannot create channels for {after}: {type(e).__name__}: {e}",
+                file=sys.stderr,
+            )
+            return
+
+    status = (user.recruit_status or "").lower()
+    if status not in ("done", "rejected"):
+        set_recruit_status(after.id, "ready")
+
+    if not getattr(user, "steam_id", None):
+        msg_en = (
+            "You have been granted the **Recruit** role by staff.\n\n"
+            "To complete your registration, please link your SteamID64.\n"
+            "Press the button below and fill in the form."
+        )
+        msg_ru = (
+            "Тебе выдали роль **Recruit**.\n\n"
+            "Чтобы завершить регистрацию, привяжи свой SteamID64.\n"
+            "Нажми на кнопку ниже и заполни форму."
+        )
+        text = msg_en if lang == "en" else msg_ru
+
+        try:
+            await after.send(text, view=SteamLinkView())
+        except discord.Forbidden:
+            print(
+                f"[Recruit auto] Cannot DM {after} about SteamID (DM closed).",
+                file=sys.stderr,
+            )
+        except Exception as e:
+            print(
+                f"[Recruit auto DM ERROR] {type(e).__name__}: {e}",
+                file=sys.stderr,
+            )
+
+    try:
+        await send_recruit_moderation_embed(
+            guild=guild,
+            member=after,
+            text_ch=text_ch,
+            voice_ch=voice_ch,
+        )
+    except Exception as e:
+        print(
+            f"[Recruit auto EMBED ERROR] {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
 
 
 async def load_extensions():
