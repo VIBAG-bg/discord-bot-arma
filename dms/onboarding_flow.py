@@ -12,7 +12,7 @@ from database.service import (
     set_recruit_status,
 )
 from dms.localization import t
-from dms.steam_link import SteamLinkView
+from dms.steam_link import SteamLinkModal, SteamLinkView
 from dms.recruit_channels import create_recruit_channels
 from dms.recruit_moderation import send_recruit_moderation_embed
 
@@ -167,12 +167,12 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+
         if not user.steam_id:
-            await interaction.response.send_message(
-                t(lang, "steam_link"),
-                ephemeral=True,
-            )
+            modal = SteamLinkModal(member=interaction.user)
+            await interaction.response.send_modal(modal)
             return
+
 
         recruit_id = RECRUIT_ROLE_ID
         if not recruit_id:
@@ -313,14 +313,10 @@ def _build_steam_message(member: discord.Member, lang: str) -> str:
 
 
 async def send_role_and_steam_dms(bot: commands.Bot, member: discord.Member, lang: str):
+    """После выбора языка: только роли + кнопка рекрута, БЕЗ Steam."""
     await member.send(
         _build_onboarding_message(member, lang),
         view=RoleSelectionView(bot_client=bot, guild_id=member.guild.id, lang=lang),
-    )
-
-    await member.send(
-        _build_steam_message(member, lang),
-        view=SteamLinkView(),
     )
 
 
