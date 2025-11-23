@@ -1,7 +1,6 @@
 # dms/localization.py
-import typing as t
 
-LANGS: dict[str, dict[str, str]] = {
+LANGS = {
     "en": {
         "greeting": "Hello, {name}!",
         "roles_header": "Available server roles:",
@@ -22,7 +21,7 @@ LANGS: dict[str, dict[str, str]] = {
         "choose_language": "Choose your language:",
         "steam_link": (
             "❗ You must link your Steam ID before applying as a recruit.\n"
-            "Open your onboarding DM and fill in the Steam ID form.\n"
+            "Open your onboarding DM and use the Steam ID button.\n"
         ),
         "invalid_steam_link": (
             "This does not look like a valid SteamID64.\n"
@@ -32,6 +31,27 @@ LANGS: dict[str, dict[str, str]] = {
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
         "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+
+        # Новый онбординг
+        "onboarding_title": "Welcome to the ARMA 3 tactical community",
+        "onboarding_body": (
+            "We focus on coordination, discipline and joint operations.\n"
+            "Use the buttons below to set up your profile:"
+        ),
+        "btn_games": "Game roles",
+        "btn_recruit": "Register as Recruit",
+        "btn_steam": "Link Steam ID",
+
+        # Игровые роли
+        "game_roles_title": "Choose your game roles",
+        "game_roles_body": "Click a button to toggle a role. Click again to remove it.",
+        "game_role_added": "Role **{role}** added.",
+        "game_role_removed": "Role **{role}** removed.",
+        "no_game_roles": "No game roles are configured yet.",
+
+        # Ошибки
+        "guild_not_found": "Server not found. Contact staff.",
+        "not_in_guild": "I cannot find you on the server. Rejoin or contact staff.",
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -53,7 +73,7 @@ LANGS: dict[str, dict[str, str]] = {
         "choose_language": "Выберите язык:",
         "steam_link": (
             "❗ Сначала нужно привязать Steam ID, прежде чем подавать заявку рекрута.\n"
-            "Открой личное сообщение с ботом и заполни форму Steam ID."
+            "Открой личное сообщение с ботом и используй кнопку Steam ID."
         ),
         "invalid_steam_link": (
             "Это не похоже на корректный SteamID64.\n"
@@ -63,6 +83,27 @@ LANGS: dict[str, dict[str, str]] = {
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+
+        # Новый онбординг
+        "onboarding_title": "Добро пожаловать в наше тактическое сообщество ARMA 3",
+        "onboarding_body": (
+            "Мы делаем упор на координацию, дисциплину и совместные операции.\n"
+            "Используйте кнопки ниже, чтобы настроить свой профиль:"
+        ),
+        "btn_games": "Игровые роли",
+        "btn_recruit": "Стать рекрутом",
+        "btn_steam": "Привязать Steam ID",
+
+        # Игровые роли
+        "game_roles_title": "Выбор игровых ролей",
+        "game_roles_body": "Нажимайте на кнопки, чтобы выдать или снять роль.",
+        "game_role_added": "Роль **{role}** выдана.",
+        "game_role_removed": "Роль **{role}** снята.",
+        "no_game_roles": "Игровые роли ещё не настроены.",
+
+        # Ошибки
+        "guild_not_found": "Сервер не найден. Обратись к администрации.",
+        "not_in_guild": "Я не могу найти тебя на сервере. Перезайди или напиши модераторам.",
     },
 }
 
@@ -70,4 +111,4 @@ LANGS: dict[str, dict[str, str]] = {
 def t(lang: str, key: str) -> str:
     """Simple translation helper."""
     data = LANGS.get(lang) or LANGS["en"]
-    return data.get(key) or LANGS["en"].get(key, "")
+    return data.get(key) or LANGS["en"].get(key, key)

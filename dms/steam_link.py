@@ -1,4 +1,5 @@
 # dms/steam_link.py
+
 import sys
 import discord
 
@@ -35,7 +36,12 @@ class SteamLinkModal(discord.ui.Modal):
             user = get_or_create_user(self.member.id)
             lang = (user.language or "en") if user else "en"
 
-            if not (steam_id.isdigit() and len(steam_id) == 17 and steam_id.startswith("7656119")):
+            # строгая валидация SteamID64
+            if not (
+                steam_id.isdigit()
+                and len(steam_id) == 17
+                and steam_id.startswith("7656119")
+            ):
                 await interaction.response.send_message(
                     t(lang, "invalid_steam_link"),
                     ephemeral=True,
@@ -59,22 +65,26 @@ class SteamLinkModal(discord.ui.Modal):
                 pass
 
 
-class SteamLinkView(discord.ui.View):
-    """View with a single button that opens Steam link modal."""
-
-    def __init__(self):
-        super().__init__(timeout=900)
-        self.add_item(LinkSteamButton())
-
-
 class LinkSteamButton(discord.ui.Button):
-    def __init__(self):
+    """Простая кнопка, открывающая модалку Steam ID."""
+
+    def __init__(self, lang: str):
+        label = "Link Steam ID" if lang == "en" else "Привязать Steam ID"
         super().__init__(
-            label="Link Steam ID",
+            label=label,
             style=discord.ButtonStyle.primary,
-            custom_id="link_steam",
+            custom_id="link_steam_main",
         )
+        self.lang = lang
 
     async def callback(self, interaction: discord.Interaction):
         modal = SteamLinkModal(member=interaction.user)
         await interaction.response.send_modal(modal)
+
+
+class SteamLinkView(discord.ui.View):
+    """Отдельный view с одной кнопкой — удобно для DM / напоминаний."""
+
+    def __init__(self, lang: str):
+        super().__init__(timeout=900)
+        self.add_item(LinkSteamButton(lang))
