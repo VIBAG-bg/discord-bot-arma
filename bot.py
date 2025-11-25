@@ -9,7 +9,7 @@ import asyncio
 import sys
 from config import Config
 from dms.steam_link import SteamLinkView
-from dms.recruit_channels import create_recruit_channels
+from dms.recruit_channels import ensure_recruit_channels
 from dms.recruit_moderation import send_recruit_moderation_embed
 from commands.help import EmbedHelpCommand
 from database.db import Base, engine
@@ -100,28 +100,15 @@ async def on_member_update(before: discord.Member, after: discord.Member):
     update_discord_profile(after)
     lang = user.language or "en"
 
-    text_ch = None
-    voice_ch = None
+    try:
+        text_ch, voice_ch = await ensure_recruit_channels(guild, after)
+    except Exception as e:
+        print(
+            f"[Recruit auto ERROR] Cannot create channels for {after}: {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
+        return
 
-    if getattr(user, "recruit_text_channel_id", None):
-        ch = guild.get_channel(user.recruit_text_channel_id)
-        if isinstance(ch, discord.TextChannel):
-            text_ch = ch
-
-    if getattr(user, "recruit_voice_channel_id", None):
-        ch = guild.get_channel(user.recruit_voice_channel_id)
-        if isinstance(ch, discord.VoiceChannel):
-            voice_ch = ch
-
-    if text_ch is None or voice_ch is None:
-        try:
-            text_ch, voice_ch = await create_recruit_channels(guild, after)
-        except Exception as e:
-            print(
-                f"[Recruit auto ERROR] Cannot create channels for {after}: {type(e).__name__}: {e}",
-                file=sys.stderr,
-            )
-            return
 
     status = (user.recruit_status or "").lower()
     if status not in ("done", "rejected"):

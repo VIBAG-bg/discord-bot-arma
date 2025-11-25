@@ -1,4 +1,5 @@
 # dms/recruit_channels.py
+import asyncio
 import sys
 import discord
 
@@ -8,6 +9,43 @@ from database.service import (
     get_recruit_code,
     set_recruit_channels,
 )
+
+_active_locks: dict[int, asyncio.Lock] = {}
+
+
+async def ensure_recruit_channels(
+    guild: discord.Guild,
+    member: discord.Member,
+) -> tuple[discord.TextChannel, discord.VoiceChannel]:
+    """
+    Гарантированно получить (или создать) пару каналов рекрута.
+    Защищено локом от одновременных вызовов для одного пользователя.
+    """
+    user = get_or_create_user_from_member(member)
+    lock = _active_locks.setdefault(user.discord_id, asyncio.Lock())
+
+    async with lock:
+        text_ch = None
+        voice_ch = None
+
+        if getattr(user, "recruit_text_channel_id", None):
+            ch = guild.get_channel(user.recruit_text_channel_id)
+            if isinstance(ch, discord.TextChannel):
+                text_ch = ch
+
+        if getattr(user, "recruit_voice_channel_id", None):
+            ch = guild.get_channel(user.recruit_voice_channel_id)
+            if isinstance(ch, discord.VoiceChannel):
+                voice_ch = ch
+
+        # если оба канала живые — просто возвращаем
+        if text_ch and voice_ch:
+            return text_ch, voice_ch
+
+        # иначе создаём с нуля (эта функция уже пишет ID в БД)
+        text_ch, voice_ch = await create_recruit_channels(guild, member)
+        return text_ch, voice_ch
+
 
 
 async def create_recruit_channels(

@@ -7,7 +7,7 @@ from discord.ext import commands
 from config import Config
 from dms.localization import t
 from dms.steam_link import LinkSteamButton, SteamLinkView
-from dms.recruit_channels import create_recruit_channels
+from dms.recruit_channels import ensure_recruit_channels
 from dms.recruit_moderation import RecruitModerationView
 from database.service import (
     get_or_create_user,
@@ -305,7 +305,7 @@ class RegisterRecruitButton(discord.ui.Button):
 
         # создаём личные каналы
         try:
-            text_ch, voice_ch = await create_recruit_channels(guild, member)
+            text_ch, voice_ch = await ensure_recruit_channels(guild, member)
         except Exception as e:
             print(f"[recruit channels ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             await interaction.response.send_message(
