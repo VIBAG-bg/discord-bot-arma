@@ -108,15 +108,15 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             file=sys.stderr,
         )
         return
-    
+
+    user = get_or_create_user_from_member(after)
+
     if not is_new:
             await after.send(
                 f"Recruit channels already exist: {text_ch.mention}",
                 ephemeral=True,
             )
             return
-
-    user = get_or_create_user_from_member(after)
 
     status = (user.recruit_status or "").lower()
     if status not in ("done", "rejected"):
