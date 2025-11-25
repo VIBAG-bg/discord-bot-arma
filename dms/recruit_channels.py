@@ -17,10 +17,7 @@ async def ensure_recruit_channels(
     guild: discord.Guild,
     member: discord.Member,
 ) -> tuple[discord.TextChannel, discord.VoiceChannel, bool]:
-    """
-    Гарантированно получить (или создать) пару каналов рекрута.
-    Защищено локом от одновременных вызовов для одного пользователя.
-    """
+
     user = get_or_create_user_from_member(member)
     lock = _active_locks.setdefault(user.discord_id, asyncio.Lock())
 
@@ -29,23 +26,25 @@ async def ensure_recruit_channels(
         text_ch = None
         voice_ch = None
 
-        if getattr(user, "recruit_text_channel_id", None):
+        # пробуем взять существующие каналы
+        if user.recruit_text_channel_id:
             ch = guild.get_channel(user.recruit_text_channel_id)
             if isinstance(ch, discord.TextChannel):
                 text_ch = ch
 
-        if getattr(user, "recruit_voice_channel_id", None):
+        if user.recruit_voice_channel_id:
             ch = guild.get_channel(user.recruit_voice_channel_id)
             if isinstance(ch, discord.VoiceChannel):
                 voice_ch = ch
 
-        # если оба канала живые — просто возвращаем
+        # каналы уже есть → is_new = False
         if text_ch and voice_ch:
-            return text_ch, voice_ch
+            return text_ch, voice_ch, False
 
-        # иначе создаём с нуля (эта функция уже пишет ID в БД)
+        # создаём новые каналы → is_new = True
         text_ch, voice_ch = await create_recruit_channels(guild, member)
-        return text_ch, voice_ch
+        return text_ch, voice_ch, True
+
 
 
 
