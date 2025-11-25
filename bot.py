@@ -111,55 +111,55 @@ async def on_member_update(before: discord.Member, after: discord.Member):
 
     user = get_or_create_user_from_member(after)
 
-    if not is_new:
-        await after.send(
-                f"Recruit channels already exist: {text_ch.mention}",
-                ephemeral=True,
-        )
-        return
+    if is_new:
+    
+        user = get_or_create_user_from_member(after)
 
-    status = (user.recruit_status or "").lower()
-    if status not in ("done", "rejected"):
-        set_recruit_status(after.id, "ready")
+        status = (user.recruit_status or "").lower()
+        if status not in ("done", "rejected"):
+            set_recruit_status(after.id, "ready")
 
-    if not getattr(user, "steam_id", None):
-        msg_en = (
-            "You have been granted the **Recruit** role by staff.\n\n"
-            "To complete your registration, please link your SteamID64.\n"
-            "Press the button below and fill in the form."
-        )
-        msg_ru = (
-            "Тебе выдали роль **Recruit**.\n\n"
-            "Чтобы завершить регистрацию, привяжи свой SteamID64.\n"
-            "Нажми на кнопку ниже и заполни форму."
-        )
-        text = msg_en if lang == "en" else msg_ru
+        if not getattr(user, "steam_id", None):
+            msg_en = (
+                "You have been granted the **Recruit** role by staff.\n\n"
+                "To complete your registration, please link your SteamID64.\n"
+                "Press the button below and fill in the form."
+            )
+            msg_ru = (
+                "Тебе выдали роль **Recruit**.\n\n"
+                "Чтобы завершить регистрацию, привяжи свой SteamID64.\n"
+                "Нажми на кнопку ниже и заполни форму."
+            )
+            text = msg_en if lang == "en" else msg_ru
+
+            try:
+                await after.send(text, view=SteamLinkView(lang))
+            except discord.Forbidden:
+                print(
+                    f"[Recruit auto] Cannot DM {after} about SteamID (DM closed).",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(
+                    f"[Recruit auto DM ERROR] {type(e).__name__}: {e}",
+                    file=sys.stderr,
+                )
 
         try:
-            await after.send(text, view=SteamLinkView(lang))
-        except discord.Forbidden:
-            print(
-                f"[Recruit auto] Cannot DM {after} about SteamID (DM closed).",
-                file=sys.stderr,
+            await send_recruit_moderation_embed(
+                guild=guild,
+                member=after,
+                text_ch=text_ch,
+                voice_ch=voice_ch,
             )
         except Exception as e:
             print(
-                f"[Recruit auto DM ERROR] {type(e).__name__}: {e}",
+                f"[Recruit auto EMBED ERROR] {type(e).__name__}: {e}",
                 file=sys.stderr,
             )
 
-    try:
-        await send_recruit_moderation_embed(
-            guild=guild,
-            member=after,
-            text_ch=text_ch,
-            voice_ch=voice_ch,
-        )
-    except Exception as e:
-        print(
-            f"[Recruit auto EMBED ERROR] {type(e).__name__}: {e}",
-            file=sys.stderr,
-        )
+    else:
+        return
 
 
 async def load_extensions():

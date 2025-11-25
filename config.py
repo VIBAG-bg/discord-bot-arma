@@ -77,6 +77,18 @@ class Config:
             "label_ru": "CS GO",
             "emoji": "💥",
         },
+        {
+            "id": int(os.getenv("GAME_ROLE_MINECRAFT_ID", "0")),
+            "label_en": "Minecraft",
+            "label_ru": "Minecraft",
+            "emoji": "⛏️",
+        },
+        {
+            "id": int(os.getenv("GAME_ROLE_RUST_ID", "0")),
+            "label_en": "Rust",
+            "label_ru": "Rust",
+            "emoji": "🪓",
+        },
         # добавь/убери по вкусу, главное: id, label_en/label_ru, emoji
     ]
 
