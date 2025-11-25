@@ -101,14 +101,22 @@ async def on_member_update(before: discord.Member, after: discord.Member):
     lang = user.language or "en"
 
     try:
-        text_ch, voice_ch = await ensure_recruit_channels(guild, after)
+        text_ch, voice_ch, is_new = await ensure_recruit_channels(guild, after)
     except Exception as e:
         print(
             f"[Recruit auto ERROR] Cannot create channels for {after}: {type(e).__name__}: {e}",
             file=sys.stderr,
         )
         return
+    
+    if not is_new:
+            await after.send(
+                f"Recruit channels already exist: {text_ch.mention}",
+                ephemeral=True,
+            )
+            return
 
+    user = get_or_create_user_from_member(after)
 
     status = (user.recruit_status or "").lower()
     if status not in ("done", "rejected"):

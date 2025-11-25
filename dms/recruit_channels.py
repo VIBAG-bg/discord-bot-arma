@@ -16,7 +16,7 @@ _active_locks: dict[int, asyncio.Lock] = {}
 async def ensure_recruit_channels(
     guild: discord.Guild,
     member: discord.Member,
-) -> tuple[discord.TextChannel, discord.VoiceChannel]:
+) -> tuple[discord.TextChannel, discord.VoiceChannel, bool]:
     """
     Гарантированно получить (или создать) пару каналов рекрута.
     Защищено локом от одновременных вызовов для одного пользователя.
