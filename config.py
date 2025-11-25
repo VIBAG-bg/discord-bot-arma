@@ -54,6 +54,33 @@ class Config:
     # Discord channel ID used as fallback when a DM cannot be delivered
     FALLBACK_CHANNEL_ID: int = int(os.getenv("FALLBACK_CHANNEL_ID", "0"))
 
+        # Язык по умолчанию для серверных панелей (role_panel и т.п.)
+    DEFAULT_LANG: str = os.getenv("DEFAULT_LANG", "ru")
+
+    # Игровые роли, которые можно выбирать через онбординг и !role_panel
+    GAME_ROLE_DEFINITIONS: list[dict] = [
+        {
+            "id": int(os.getenv("GAME_ROLE_ARMA3_ID", "0")),
+            "label_en": "ARMA 3",
+            "label_ru": "ARMA 3",
+            "emoji": "🎯",
+        },
+        {
+            "id": int(os.getenv("GAME_ROLE_SQUAD_ID", "0")),
+            "label_en": "Squad",
+            "label_ru": "Squad",
+            "emoji": "🪖",
+        },
+        {
+            "id": int(os.getenv("GAME_ROLE_CSGO_ID", "0")),
+            "label_en": "CS GO",
+            "label_ru": "CS GO",
+            "emoji": "💥",
+        },
+        # добавь/убери по вкусу, главное: id, label_en/label_ru, emoji
+    ]
+
+
     # Recruit role ID (button "Register as Recruit")
     RECRUIT_ROLE_ID: int = int(os.getenv("RECRUIT_ROLE_ID", "0"))
 

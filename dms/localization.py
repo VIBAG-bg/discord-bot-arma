@@ -69,6 +69,13 @@ LANGS = {
         "game_role_removed": "Role **{role}** removed.",
         "no_game_roles": "No game roles are configured yet.",
 
+        
+        "game_roles_panel_title": "Game roles",
+        "game_roles_panel_body": (
+            "Press the button below to open the game roles menu.\n"
+            "In that menu you can enable or disable roles by clicking the buttons."
+        ),
+
         # Ошибки
         "guild_not_found": "Server not found. Contact staff.",
         "not_in_guild": "I cannot find you on the server. Rejoin or contact staff.",
@@ -140,6 +147,12 @@ LANGS = {
         "game_role_added": "Роль **{role}** выдана.",
         "game_role_removed": "Роль **{role}** снята.",
         "no_game_roles": "Игровые роли ещё не настроены.",
+
+        "game_roles_panel_title": "Игровые роли",
+        "game_roles_panel_body": (
+            "Нажми кнопку ниже, чтобы открыть меню игровых ролей.\n"
+            "В нём можно включать и отключать роли по кнопкам."
+        ),
 
         # Ошибки
         "guild_not_found": "Сервер не найден. Обратись к администрации.",

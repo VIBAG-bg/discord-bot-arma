@@ -174,6 +174,7 @@ async def load_extensions():
         "commands.general",
         "commands.onboarding",
         "commands.recruits",
+        "commands.roles_panel",
         "events.onboarding_events"
 
     ]
