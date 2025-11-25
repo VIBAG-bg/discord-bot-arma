@@ -182,7 +182,7 @@ class GameRoleToggleButton(discord.ui.Button):
         role = guild.get_role(self.role_id)
         if role is None:
             await interaction.response.send_message(
-                "Configured role not found on server.",
+                t(lang, "game_role_not_found"),
                 ephemeral=True,
             )
             return
@@ -202,7 +202,7 @@ class GameRoleToggleButton(discord.ui.Button):
             await interaction.response.send_message(text, ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message(
-                "I don't have permission to manage your roles.",
+                t(lang, "no_permission_manage_roles"),
                 ephemeral=True,
             )
 
@@ -245,9 +245,7 @@ class RegisterRecruitButton(discord.ui.Button):
         status = (user.recruit_status or "pending").lower()
         if status in ("ready", "done"):
             await interaction.response.send_message(
-                "You have already applied as a recruit. Contact staff if something is wrong."
-                if lang == "en"
-                else "Ты уже зарегистрирован как рекрут. Если что-то не так, напиши рекрутерам.",
+                t(lang, "recruit_already_applied"),
                 ephemeral=True,
             )
             return
@@ -255,9 +253,7 @@ class RegisterRecruitButton(discord.ui.Button):
         # если уже есть каналы рекрута – не плодим дубликаты
         if user.recruit_text_channel_id or user.recruit_voice_channel_id:
             await interaction.response.send_message(
-                "You have already applied as a recruit. Contact staff if something is wrong."
-                if lang == "en"
-                else "Ты уже зарегистрирован как рекрут. Если что-то не так, напиши рекрутерам.",
+                t(lang, "recruit_already_applied"),
                 ephemeral=True,
             )
             return
@@ -275,7 +271,7 @@ class RegisterRecruitButton(discord.ui.Button):
         recruit_id = RECRUIT_ROLE_ID
         if not recruit_id:
             await interaction.response.send_message(
-                "Recruit role ID is not configured correctly.",
+                t(lang, "recruit_role_not_configured"),
                 ephemeral=True,
             )
             return
@@ -283,14 +279,14 @@ class RegisterRecruitButton(discord.ui.Button):
         recruit_role = guild.get_role(recruit_id)
         if not recruit_role:
             await interaction.response.send_message(
-                "Recruit role not found. Ask staff to configure it.",
+                t(lang, "recruit_role_not_found"),
                 ephemeral=True,
             )
             return
 
         if recruit_role in member.roles:
             await interaction.response.send_message(
-                "You are already registered as a recruit.",
+                t(lang, "recruit_already_has_role"),
                 ephemeral=True,
             )
             return
@@ -299,7 +295,7 @@ class RegisterRecruitButton(discord.ui.Button):
             await member.add_roles(recruit_role, reason="Recruit registration via DM")
         except discord.Forbidden:
             await interaction.response.send_message(
-                "I cannot grant the recruit role. Contact staff.",
+                t(lang, "recruit_cannot_grant_role"),
                 ephemeral=True,
             )
             return

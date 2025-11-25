@@ -66,14 +66,12 @@ class SteamLinkModal(discord.ui.Modal):
 
 
 class LinkSteamButton(discord.ui.Button):
-    """Простая кнопка, открывающая модалку Steam ID."""
-
+    """Button to open the SteamLinkModal."""
     def __init__(self, lang: str):
-        label = "Link Steam ID" if lang == "en" else "Привязать Steam ID"
         super().__init__(
-            label=label,
+            label=t(lang, "btn_steam"),
             style=discord.ButtonStyle.primary,
-            custom_id="link_steam_main",
+            custom_id="link_steam_modal",
         )
         self.lang = lang
 

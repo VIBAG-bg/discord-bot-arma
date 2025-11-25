@@ -20,8 +20,8 @@ LANGS = {
         "language_set": "Language set: EN",
         "choose_language": "Choose your language:",
         "steam_link": (
-            "❗ You must link your Steam ID before applying as a recruit.\n"
-            "Open your onboarding DM and use the Steam ID button.\n"
+            "⚠️ You must link your Steam ID before applying as a recruit.\n\n"
+            "Use the button below and enter your 17-digit SteamID64."
         ),
         "invalid_steam_link": (
             "This does not look like a valid SteamID64.\n"
@@ -31,6 +31,26 @@ LANGS = {
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
         "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+        "recruit_already_applied": (
+            "You have already applied as a recruit. "
+            "If something seems wrong, contact the staff."
+        ),
+        "recruit_role_not_configured": (
+            "Recruit role ID is not configured correctly. "
+            "Please contact the staff."
+        ),
+        "recruit_role_not_found": (
+            "Recruit role not found on the server. "
+            "Ask the staff to configure it."
+        ),
+        "recruit_already_has_role": "You are already registered as a recruit.",
+        "recruit_cannot_grant_role": (
+            "I cannot grant the recruit role. "
+            "Please contact the staff; I may be missing permissions."
+        ),
+
+        "game_role_not_found": "Configured role not found on server.",
+        "no_permission_manage_roles": "I don't have permission to manage your roles.",
 
         # Новый онбординг
         "onboarding_title": "Welcome to the ARMA 3 tactical community",
@@ -72,8 +92,8 @@ LANGS = {
         "language_set": "Язык установлен: RU",
         "choose_language": "Выберите язык:",
         "steam_link": (
-            "❗ Сначала нужно привязать Steam ID, прежде чем подавать заявку рекрута.\n"
-            "Открой личное сообщение с ботом и используй кнопку Steam ID."
+            "⚠️ Перед тем как подать заявку рекрута, нужно привязать Steam ID.\n\n"
+            "Используй кнопку ниже и введи свой 17-значный SteamID64."
         ),
         "invalid_steam_link": (
             "Это не похоже на корректный SteamID64.\n"
@@ -83,6 +103,26 @@ LANGS = {
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+        "recruit_already_applied": (
+            "Ты уже подал заявку как рекрут. "
+            "Если что-то не так, напиши рекрутёрам или модераторам."
+        ),
+        "recruit_role_not_configured": (
+            "ID роли рекрута настроен некорректно. "
+            "Сообщи, пожалуйста, администрации сервера."
+        ),
+        "recruit_role_not_found": (
+            "Роль рекрута не найдена на сервере. "
+            "Сообщи, пожалуйста, администрации сервера."
+        ),
+        "recruit_already_has_role": "Ты уже зарегистрирован как рекрут.",
+        "recruit_cannot_grant_role": (
+            "Я не могу выдать роль рекрута. "
+            "Похоже, не хватает прав. Обратись к администрации."
+        ),
+
+        "game_role_not_found": "Настроенная игровая роль не найдена на сервере.",
+        "no_permission_manage_roles": "У меня нет прав управлять твоими ролями.",
 
         # Новый онбординг
         "onboarding_title": "Добро пожаловать в наше тактическое сообщество ARMA 3",
