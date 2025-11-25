@@ -17,16 +17,21 @@ async def ensure_recruit_channels(
     guild: discord.Guild,
     member: discord.Member,
 ) -> tuple[discord.TextChannel, discord.VoiceChannel, bool]:
-
+    """
+    Гарантированно вернуть (или создать) каналы рекрута.
+    Всегда возвращает ТРИ значения.
+    """
     user = get_or_create_user_from_member(member)
     lock = _active_locks.setdefault(user.discord_id, asyncio.Lock())
 
     async with lock:
+        # перепривязка (вдруг БД обновилась)
         user = get_or_create_user_from_member(member)
+
         text_ch = None
         voice_ch = None
 
-        # пробуем взять существующие каналы
+        # проверяем существующие каналы
         if user.recruit_text_channel_id:
             ch = guild.get_channel(user.recruit_text_channel_id)
             if isinstance(ch, discord.TextChannel):
@@ -37,14 +42,21 @@ async def ensure_recruit_channels(
             if isinstance(ch, discord.VoiceChannel):
                 voice_ch = ch
 
-        # каналы уже есть → is_new = False
+        # если оба канала существуют
         if text_ch and voice_ch:
             return text_ch, voice_ch, False
 
-        # создаём новые каналы → is_new = True
-        text_ch, voice_ch = await create_recruit_channels(guild, member)
-        return text_ch, voice_ch, True
+        # иначе создаём
+        try:
+            text_ch, voice_ch = await create_recruit_channels(guild, member)
+        except Exception as e:
+            print(
+                f"[ensure_recruit_channels ERROR] {type(e).__name__}: {e}",
+                file=sys.stderr,
+            )
+            raise
 
+        return text_ch, voice_ch, True
 
 
 

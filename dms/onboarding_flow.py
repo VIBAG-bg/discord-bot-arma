@@ -305,7 +305,7 @@ class RegisterRecruitButton(discord.ui.Button):
 
         # создаём личные каналы
         try:
-            text_ch, voice_ch = await ensure_recruit_channels(guild, member)
+            text_ch, voice_ch, is_new = await ensure_recruit_channels(guild, member)
         except Exception as e:
             print(f"[recruit channels ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             await interaction.response.send_message(
