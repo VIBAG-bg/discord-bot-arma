@@ -315,6 +315,19 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
+        if not is_new:
+            await interaction.response.send_message(
+                (
+                    f'Recruit role "{recruit_role.name}" assigned!\n'
+                    f'Your application status: **READY**.\n\n'
+                    f'Your interview channels already exist:\n'
+                    f'- Text: {text_ch.mention}\n'
+                    f'- Voice: {voice_ch.mention}'
+                ),
+                ephemeral=True,
+            )
+            return
+
         # обновим user
         user = get_or_create_user_from_member(member)
         lang = user.language or lang
