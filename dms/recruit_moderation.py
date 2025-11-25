@@ -147,6 +147,28 @@ class RecruitModerationView(discord.ui.View):
                 ephemeral=True,
             )
             return
+        
+        db_user = get_or_create_user_from_member(recruit)
+        lang = (db_user.language or "en") if db_user else "en"
+
+        if not getattr(db_user, "steam_id", None):
+            if lang == "ru":
+                text = (
+                    "У этого рекрута ещё не привязан **SteamID64**.\n\n"
+                    "Попросите его открыть личные сообщения с ботом и нажать кнопку "
+                    "**\"Link Steam ID\"** в сообщении онбординга.\n"
+                    "После этого вы сможете одобрить заявку."
+                )
+            else:
+                text = (
+                    "This recruit has not linked their **SteamID64** yet.\n\n"
+                    "Ask them to open their DMs with the bot and press the "
+                    "**\"Link Steam ID\"** button in the onboarding message.\n"
+                    "After that you can approve the application."
+                )
+
+            await interaction.followup.send(text, ephemeral=True)
+            return
 
         set_recruit_status(self.recruit_id, "done")
 
