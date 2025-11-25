@@ -1,5 +1,3 @@
-# cogs/recruits.py
-
 import discord
 from discord.ext import commands
 
@@ -10,170 +8,239 @@ from database.service import (
     get_user_by_discord_id,
     get_user_by_username,
     get_or_create_user_from_member,
+    get_recruit_code,
 )
+from database.models import User
 
 STATUSES = ["pending", "ready", "done", "rejected"]
 
 
 class RecruitCommands(commands.Cog):
+    """Команды для работы с рекрутами и синхронизации пользователей."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # --- общий чек доступа для всего кога ---
-
-    @staticmethod
-    def _is_recruit_mod(member: discord.Member) -> bool:
-        # админы сервера
-        if member.guild_permissions.administrator or member.guild_permissions.manage_guild:
-            return True
-
-        # роли рекрутеров
-        recruiter_ids = set(getattr(Config, "RECRUITER_ROLE_IDS", []))
-        if getattr(Config, "RECRUITER_ROLE_ID", 0):
-            recruiter_ids.add(Config.RECRUITER_ROLE_ID)
-
-        if any(r.id in recruiter_ids for r in member.roles):
-            return True
-
-        # is_admin в БД
-        db_user = get_or_create_user_from_member(member)
-        return bool(getattr(db_user, "is_admin", False))
-
-    async def cog_check(self, ctx: commands.Context) -> bool:
-        # все команды этого кога только для рекрутеров / модов / админов
-        if not isinstance(ctx.author, discord.Member):
-            return False
-        return self._is_recruit_mod(ctx.author)
-
-    # ---------- !recruits ----------
-
-    @commands.command(name="recruits")
-    @commands.guild_only()
-    async def list_recruits(self, ctx: commands.Context):
-        """
-        Показать всех рекрутов по статусам.
-        """
-        guild = ctx.guild
-        if guild is None:
-            return
-
-        embed = discord.Embed(
-            title="Recruits overview",
-            color=discord.Color.blurple(),
-        )
-
-        # по каждому статусу отдельное поле
-        for status in STATUSES:
-            users = get_recruits_by_status(status)
-            if not users:
-                value = "_none_"
-            else:
-                lines: list[str] = []
-                for u in users[:30]:  # вдруг их будет много
-                    member = guild.get_member(u.discord_id)
-                    mention = member.mention if member else f"`{u.discord_id}`"
-                    code = getattr(u, "recruit_code", None) or ""
-                    if code:
-                        lines.append(f"- {mention} (`{code}`)")
-                    else:
-                        lines.append(f"- {mention}")
-                if len(users) > 30:
-                    lines.append(f"... и ещё {len(users) - 30} записей")
-                value = "\n".join(lines)
-
-            embed.add_field(
-                name=status.upper(),
-                value=value,
-                inline=False,
-            )
-
-        embed.set_footer(text="Statuses: pending / ready / done / rejected")
-
-        await ctx.send(embed=embed)
-
-    # ---------- !recruit @user ----------
+    # ========= !recruit =========
 
     @commands.command(name="recruit")
-    @commands.guild_only()
-    async def recruit_info(self, ctx: commands.Context, member: discord.Member):
+    async def recruit(self, ctx: commands.Context, member: discord.Member | None = None):
         """
-        Показать инфу по одному человеку (через @mention):
-        статус рекрута, Steam, текст/войс-каналы.
+        Показать подробную информацию о рекруте.
+        Без аргументов — про тебя, с аргументом — про указанного пользователя.
+
+        Примеры:
+          !recruit
+          !recruit @User
         """
-        guild = ctx.guild
-        if guild is None:
-            return
+        target = member or ctx.author
 
-        # 1. Пытаемся найти по discord_id (правильный путь)
-        user = get_user_by_discord_id(member.id)
+        # На случай если это не Member (хотя в гильдии обычно Member)
+        if not isinstance(target, discord.Member):
+            guild = ctx.guild
+            if guild is not None:
+                try:
+                    target = await guild.fetch_member(target.id)  # type: ignore
+                except discord.DiscordException:
+                    await ctx.send("User is not a member of this guild.")
+                    return
 
-        # 2. Если вдруг нет, пробуем по username (как ты просил)
-        if user is None:
-            user = get_user_by_username(member.name)
-
-        if user is None or not user.recruit_status:
-            await ctx.send(
-                f"{member.mention} не найден в базе как рекрут.",
-                allowed_mentions=discord.AllowedMentions(users=False),
-            )
-            return
-
-        status = (user.recruit_status or "pending").lower()
+        user = get_or_create_user_from_member(target)
         lang = user.language or "en"
+        status = (user.recruit_status or "pending").lower()
 
-        # --- Steam ---
-        if getattr(user, "steam_url", None):
+        # Стим-ссылка
+        if user.steam_url:
             steam_url = user.steam_url
-        elif getattr(user, "steam_id", None):
+        elif user.steam_id:
             steam_url = f"https://steamcommunity.com/profiles/{user.steam_id}"
         else:
             steam_url = None
 
-        if getattr(user, "steam_id", None):
-            if steam_url:
-                steam_value = f"ID: `{user.steam_id}`\n[Open profile]({steam_url})"
-            else:
-                steam_value = f"ID: `{user.steam_id}`"
-        else:
-            steam_value = "Not linked"
+        # Каналы
+        text_mention = (
+            f"<#{user.recruit_text_channel_id}>"
+            if user.recruit_text_channel_id
+            else "—"
+        )
+        voice_mention = (
+            f"<#{user.recruit_voice_channel_id}>"
+            if user.recruit_voice_channel_id
+            else "—"
+        )
 
-        # --- каналы ---
-        text_ch = guild.get_channel(getattr(user, "recruit_text_channel_id", 0))
-        voice_ch = guild.get_channel(getattr(user, "recruit_voice_channel_id", 0))
+        recruit_code = get_recruit_code(user)
 
-        text_value = text_ch.mention if isinstance(text_ch, discord.TextChannel) else "Not set"
-        voice_value = voice_ch.mention if isinstance(voice_ch, discord.VoiceChannel) else "Not set"
-
-        lang_name = {
-            "ru": "Русский",
-            "en": "English",
-        }.get(lang, lang)
-
-        # --- эмбед ---
         embed = discord.Embed(
-            title=f"Recruit info: {member.display_name}",
+            title="Recruit info / Информация о рекруте",
             color=discord.Color.gold(),
+        )
+
+        embed.add_field(
+            name="Recruit code",
+            value=recruit_code,
+            inline=False,
         )
 
         embed.add_field(
             name="Discord",
             value=(
-                f"{member.mention}\n"
-                f"Display name: **{member.display_name}**\n"
-                f"Username: `{member.name}`\n"
-                f"ID: `{member.id}`"
+                f"{target.mention}\n"
+                f"Display name: **{target.display_name}**\n"
+                f"Username: `{target.name}`\n"
+                f"ID: `{target.id}`"
             ),
             inline=False,
         )
 
+        lang_name = {"ru": "Русский", "en": "English"}.get(user.language, "English")
+
         embed.add_field(name="Status", value=status.upper(), inline=True)
         embed.add_field(name="Language", value=lang_name, inline=True)
 
-        embed.add_field(name="Steam", value=steam_value, inline=False)
-        embed.add_field(name="Text channel", value=text_value, inline=True)
-        embed.add_field(name="Voice channel", value=voice_value, inline=True)
+        if steam_url:
+            embed.add_field(
+                name="Steam",
+                value=f"ID: `{user.steam_id}`\n[Open profile]({steam_url})",
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="Steam",
+                value="Not linked / Не привязан",
+                inline=False,
+            )
+
+        embed.add_field(
+            name="Text channel",
+            value=text_mention,
+            inline=True,
+        )
+        embed.add_field(
+            name="Voice channel",
+            value=voice_mention,
+            inline=True,
+        )
 
         await ctx.send(embed=embed)
+
+    # ========= !recruits =========
+
+    @commands.command(name="recruits")
+    @commands.has_permissions(administrator=True)
+    async def recruits(self, ctx: commands.Context, status: str | None = None):
+        """
+        Краткий обзор рекрутов.
+
+        Без аргумента — сводка по всем статусам.
+        С аргументом (pending/ready/done/rejected) — только этот статус.
+
+        Примеры:
+          !recruits
+          !recruits ready
+        """
+        if status:
+            status = status.lower()
+            if status not in STATUSES:
+                await ctx.send("Unknown status. Use: pending / ready / done / rejected.")
+                return
+
+            users = get_recruits_by_status(status)
+            if not users:
+                await ctx.send(f"No recruits with status **{status}**.")
+                return
+
+            lines: list[str] = []
+            for u in users:
+                line = f"- <@{u.discord_id}> (ID `{u.discord_id}`)"
+                if u.steam_id:
+                    line += f" | Steam `{u.steam_id}`"
+                lines.append(line)
+
+            embed = discord.Embed(
+                title=f"Recruits with status {status.upper()}",
+                description="\n".join(lines),
+                color=discord.Color.blurple(),
+            )
+            await ctx.send(embed=embed)
+            return
+
+        # Без статуса — сводка по всем
+        embed = discord.Embed(
+            title="Recruits overview",
+            color=discord.Color.blurple(),
+        )
+
+        for st in STATUSES:
+            users = get_recruits_by_status(st)
+            if not users:
+                value = "_none_"
+            else:
+                value_lines = [f"<@{u.discord_id}>" for u in users]
+                value = "\n".join(value_lines)
+
+            embed.add_field(
+                name=st.upper(),
+                value=value,
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
+
+    # ========= !user_update =========
+
+    @commands.command(name="user_update")
+    @commands.has_permissions(administrator=True)
+    async def user_update(self, ctx: commands.Context, member: discord.Member | None = None):
+        """
+        Обновить одну запись пользователя в БД из текущих данных Discord.
+        Если пользователя нет — будет создан.
+
+        Примеры:
+          !user_update
+          !user_update @User
+        """
+        target = member or ctx.author
+
+        if not isinstance(target, discord.Member):
+            guild = ctx.guild
+            if guild is not None:
+                try:
+                    target = await guild.fetch_member(target.id)  # type: ignore
+                except discord.DiscordException:
+                    await ctx.send("User is not a member of this guild.")
+                    return
+
+        user = get_or_create_user_from_member(target)
+
+        await ctx.send(
+            f"User `{target}` synced.\n"
+            f"discord_id={user.discord_id}, username=`{user.username}`, "
+            f"display_name=`{user.display_name}`, is_admin={user.is_admin}"
+        )
+
+    # ========= !user_updates =========
+
+    @commands.command(name="user_updates")
+    @commands.has_permissions(administrator=True)
+    async def user_updates(self, ctx: commands.Context):
+        """
+        Массовый апдейт всех пользователей сервера в БД.
+        Проходит по всем участникам гильдии и синхронизирует профиль.
+        """
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command can only be used in a guild.")
+            return
+
+        updated = 0
+        for member in guild.members:
+            if member.bot:
+                continue
+            get_or_create_user_from_member(member)
+            updated += 1
+
+        await ctx.send(f"Updated {updated} users from guild `{guild.name}`.")
 
 
 async def setup(bot: commands.Bot):

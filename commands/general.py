@@ -235,6 +235,74 @@ class General(commands.Cog):
         
         await ctx.send(embed=embed)
 
+        @commands.command(name="say")
+        @commands.has_permissions(administrator=True)
+        async def say(
+            self,
+            ctx: commands.Context,
+            channel: discord.TextChannel | None = None,
+            *,
+            text: str,
+        ):
+            """
+            Заставить бота что-то сказать в нужном канале.
+
+            Варианты:
+            !say Текст тут
+                → бот пишет в текущий канал
+
+            !say #channel Текст тут
+                → бот пишет в указанный канал
+
+            !say #channel Заголовок | Текст тут --embed
+                → бот отправляет embed с title + description
+            """
+            use_embed = False
+            flag = "--embed"
+
+            # флаг только в конце
+            if text.endswith(flag):
+                use_embed = True
+                text = text[:-len(flag)].strip()
+
+            target_channel = channel or ctx.channel
+
+            if not text:
+                await ctx.send("Nothing to send.")
+                return
+
+            if use_embed:
+                # парсим "Title | Body"
+                title = None
+                description = text
+
+                if "|" in text:
+                    raw_title, raw_body = text.split("|", 1)
+                    title = raw_title.strip() or None
+                    description = raw_body.strip() or None
+
+                embed = discord.Embed(
+                    title=title,
+                    description=description,
+                    color=discord.Color.blurple(),
+                )
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon_url=ctx.author.display_avatar.url
+                    if ctx.author.display_avatar
+                    else None,
+                )
+                await target_channel.send(embed=embed)
+            else:
+                await target_channel.send(text)
+
+            # чистим команду, если можем
+            try:
+                await ctx.message.delete()
+            except discord.Forbidden:
+                pass
+
+
 
 async def setup(bot):
     """Setup function to add the cog to the bot."""
