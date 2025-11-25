@@ -14,6 +14,7 @@ from dms.recruit_moderation import send_recruit_moderation_embed
 from commands.help import EmbedHelpCommand
 from database.db import Base, engine
 from database import models
+from dms.steam_link import SteamLinkView
 from database.service import (
     get_or_create_user_from_member,
     update_discord_profile,
@@ -140,7 +141,7 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         text = msg_en if lang == "en" else msg_ru
 
         try:
-            await after.send(text, view=SteamLinkView())
+            await after.send(text, view=SteamLinkView(lang))
         except discord.Forbidden:
             print(
                 f"[Recruit auto] Cannot DM {after} about SteamID (DM closed).",
