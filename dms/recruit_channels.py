@@ -25,6 +25,7 @@ async def ensure_recruit_channels(
     lock = _active_locks.setdefault(user.discord_id, asyncio.Lock())
 
     async with lock:
+        user = get_or_create_user_from_member(member)
         text_ch = None
         voice_ch = None
 
