@@ -79,6 +79,36 @@ LANGS = {
         # Ошибки
         "guild_not_found": "Server not found. Contact staff.",
         "not_in_guild": "I cannot find you on the server. Rejoin or contact staff.",
+
+        "role_panel_title": "Role selection",
+        "role_panel_body": (
+            "Here you can select game roles, ARMA operation specializations "
+            "and start the recruit process."
+        ),
+        "role_panel_games_header": "Game roles",
+        "role_panel_arma_header": "ARMA operation specializations",
+
+        "btn_games_panel": "Select game role",
+        "btn_arma_panel": "Select ARMA role",
+        "btn_recruit": "Become a recruit",
+
+        "no_roles_configured": "No roles are configured in the bot config.",
+        "no_game_roles": "No game roles are configured.",
+        "no_arma_roles": "No ARMA operation roles are configured.",
+
+        "arma_roles_title": "ARMA operation roles",
+        "arma_roles_body": (
+            "These roles are available only for approved recruits (status DONE).\n"
+            "Use them to indicate your preferred roles during operations."
+        ),
+        "arma_roles_not_done": (
+            "ARMA operation roles are only available for recruits with status **DONE**.\n"
+            "Complete the recruit process first, then return to this panel."
+        ),
+        "arma_role_not_found": "This ARMA role is not configured or no longer exists.",
+        "arma_role_added": "ARMA role **{role}** has been assigned.",
+        "arma_role_removed": "ARMA role **{role}** has been removed.",
+
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -143,7 +173,7 @@ LANGS = {
 
         # Игровые роли
         "game_roles_title": "Выбор игровых ролей",
-        "game_roles_body": "Нажимайте на кнопки, чтобы выдать или снять роль.",
+        "game_roles_body": "Нажимайте на кнопки, чтобы получить или снять роль.",
         "game_role_added": "Роль **{role}** выдана.",
         "game_role_removed": "Роль **{role}** снята.",
         "no_game_roles": "Игровые роли ещё не настроены.",
@@ -157,6 +187,35 @@ LANGS = {
         # Ошибки
         "guild_not_found": "Сервер не найден. Обратись к администрации.",
         "not_in_guild": "Я не могу найти тебя на сервере. Перезайди или напиши модераторам.",
+
+        "role_panel_title": "Панель ролей",
+        "role_panel_body": (
+            "Здесь можно выбрать игровые роли, специализации для АРМА-операций "
+            "и запустить процесс рекрутинга."
+        ),
+        "role_panel_games_header": "Игровые роли",
+        "role_panel_arma_header": "Роли для АРМА-операций",
+
+        "btn_games_panel": "Получить роль игры",
+        "btn_arma_panel": "Получить роль по АРМЕ",
+        "btn_recruit": "Стать рекрутом",
+
+        "no_roles_configured": "В конфиге бота не настроены роли.",
+        "no_game_roles": "Игровые роли не настроены.",
+        "no_arma_roles": "Роли для АРМА-операций не настроены.",
+
+        "arma_roles_title": "Роли для АРМА-операций",
+        "arma_roles_body": (
+            "Эти роли доступны только одобренным рекрутам (статус DONE).\n"
+            "Используются для обозначения желаемой роли на операциях."
+        ),
+        "arma_roles_not_done": (
+            "Роли по АРМА-должностям доступны только рекрутам со статусом **DONE**.\n"
+            "Сначала завершите рекрут-процесс, затем вернитесь к этой панели."
+        ),
+        "arma_role_not_found": "Эта роль для АРМА-операций не настроена или была удалена.",
+        "arma_role_added": "Роль для АРМА-операций **{role}** выдана.",
+        "arma_role_removed": "Роль для АРМА-операций **{role}** снята.",
     },
 }
 

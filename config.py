@@ -63,34 +63,112 @@ class Config:
             "id": int(os.getenv("GAME_ROLE_ARMA3_ID", "0")),
             "label_en": "ARMA 3",
             "label_ru": "ARMA 3",
+            "description_en": "Tactical military simulation game.",
+            "description_ru": "Тактический военный симулятор.",
             "emoji": "🎯",
         },
         {
             "id": int(os.getenv("GAME_ROLE_SQUAD_ID", "0")),
             "label_en": "Squad",
             "label_ru": "Squad",
+            "description_en": "Team-based military FPS game.",
+            "description_ru": "Командный военный шутер от первого лица.",
             "emoji": "🪖",
         },
         {
             "id": int(os.getenv("GAME_ROLE_CSGO_ID", "0")),
             "label_en": "CS GO",
             "label_ru": "CS GO",
+            "description_en": "Competitive first-person shooter game.",
+            "description_ru": "Конкурентный шутер от первого лица.",
             "emoji": "💥",
         },
         {
             "id": int(os.getenv("GAME_ROLE_MINECRAFT_ID", "0")),
             "label_en": "Minecraft",
             "label_ru": "Minecraft",
+            "description_en": "Sandbox construction and survival game.",
+            "description_ru": "Песочница для строительства и выживания.",
             "emoji": "⛏️",
         },
         {
             "id": int(os.getenv("GAME_ROLE_RUST_ID", "0")),
             "label_en": "Rust",
             "label_ru": "Rust",
+            "description_en": "Survival game set in a post-apocalyptic world.",
+            "description_ru": "Игра на выживание в постапокалиптическом мире.",
             "emoji": "🪓",
         },
         # добавь/убери по вкусу, главное: id, label_en/label_ru, emoji
     ]
+
+
+    ARMA_ROLE_DEFINITIONS = [
+    {
+        "id": int(os.getenv("ARMA_ROLE_SQUAD_LEADER_ID", "0")),
+        "label_en": "Squad Leader",
+        "label_ru": "Командир отделения",
+        "description_en": "Leads the squad, coordinates movement and communication.",
+        "description_ru": "Руководит отделением, координирует передвижение и связь.",
+        "emoji": "🎯",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_TEAM_LEADER_ID", "0")),
+        "label_en": "Team Leader",
+        "label_ru": "Командир звена",
+        "description_en": "Leads a fireteam during engagements.",
+        "description_ru": "Управляет боевым звеном во время боевых действий.",
+        "emoji": "🔱",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_RIFLEMAN_ID", "0")),
+        "label_en": "Rifleman",
+        "label_ru": "Стрелок",
+        "description_en": "Standard infantry role, main firepower of the squad.",
+        "description_ru": "Базовая пехотная роль, главный носитель огневой мощи.",
+        "emoji": "🔫",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_MEDIC_ID", "0")),
+        "label_en": "Medic",
+        "label_ru": "Медик",
+        "description_en": "Provides medical support and stabilizes injured teammates.",
+        "description_ru": "Оказывает медицинскую помощь и стабилизирует раненых.",
+        "emoji": "⛑️",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_AUTORIFLEMAN_ID", "0")),
+        "label_en": "Autorifleman",
+        "label_ru": "Пулемётчик",
+        "description_en": "Delivers suppressive fire using a machine gun.",
+        "description_ru": "Ведёт подавляющий огонь из пулемёта.",
+        "emoji": "🧨",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_AT_SPECIALIST_ID", "0")),
+        "label_en": "AT Specialist",
+        "label_ru": "ПТ-специалист",
+        "description_en": "Carries anti-tank weapons and engages armored vehicles.",
+        "description_ru": "Использует противотанковое оружие, уничтожает бронетехнику.",
+        "emoji": "🚀",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_MARKSMAN_ID", "0")),
+        "label_en": "Marksman",
+        "label_ru": "Маркер / Дальнобойщик",
+        "description_en": "Engages targets at medium-long distances with high accuracy.",
+        "description_ru": "Атакует цели на средних и дальних дистанциях с высокой точностью.",
+        "emoji": "🎯",
+    },
+    {
+        "id": int(os.getenv("ARMA_ROLE_ENGINEER_ID", "0")),
+        "label_en": "Engineer",
+        "label_ru": "Инженер",
+        "description_en": "Handles explosives, repairs vehicles, performs technical tasks.",
+        "description_ru": "Работает с взрывчаткой, техникой и инженерными задачами.",
+        "emoji": "🛠️",
+    },
+]
 
 
     # Recruit role ID (button "Register as Recruit")

@@ -28,6 +28,19 @@ def _get_game_role_definitions():
     """Берём игровые роли из конфига, но не падаем, если их нет."""
     return getattr(Config, "GAME_ROLE_DEFINITIONS", []) or []
 
+def _get_arma_role_definitions():
+    """Роли для АРМА-специализаций."""
+    return getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or []
+
+
+def _build_arma_roles_embed(lang: str) -> discord.Embed:
+    return discord.Embed(
+        title=t(lang, "arma_roles_title"),
+        description=t(lang, "arma_roles_body"),
+        color=discord.Color.dark_gold(),
+    )
+
+
 
 def _build_onboarding_embed(member: discord.Member, lang: str) -> discord.Embed:
     """Главное приветственное сообщение после выбора языка."""
@@ -205,6 +218,104 @@ class GameRoleToggleButton(discord.ui.Button):
                 t(lang, "no_permission_manage_roles"),
                 ephemeral=True,
             )
+
+
+
+class ArmaRolesView(discord.ui.View):
+    """View с кнопками ролей для АРМА-операций (только для recruit_status='done')."""
+
+    def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
+        super().__init__(timeout=300)
+        self.bot = bot
+        self.guild_id = guild_id
+        self.lang = lang
+
+        for role_cfg in _get_arma_role_definitions():
+            self.add_item(ArmaRoleToggleButton(role_cfg, lang))
+
+
+class ArmaRoleToggleButton(discord.ui.Button):
+    def __init__(self, role_cfg: dict, lang: str):
+        self.role_id: int = int(role_cfg.get("id", 0))
+
+        label = (
+            role_cfg.get("label_ru")
+            if lang == "ru"
+            else role_cfg.get("label_en")
+        ) or role_cfg.get("label") or "Role"
+
+        emoji = role_cfg.get("emoji")
+
+        super().__init__(
+            label=label,
+            emoji=emoji,
+            style=discord.ButtonStyle.primary,
+            custom_id=f"arma_role_{self.role_id}",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        view: ArmaRolesView = self.view  # type: ignore
+        lang = view.lang
+
+        guild = interaction.client.get_guild(view.guild_id)
+        if guild is None:
+            await interaction.response.send_message(
+                t(lang, "guild_not_found"),
+                ephemeral=True,
+            )
+            return
+
+        member = guild.get_member(interaction.user.id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(interaction.user.id)
+            except discord.DiscordException:
+                await interaction.response.send_message(
+                    t(lang, "not_in_guild"),
+                    ephemeral=True,
+                )
+                return
+
+        from database.service import get_or_create_user_from_member  # чтобы не городить циклы импорта наверху
+        user = get_or_create_user_from_member(member)
+        status = (user.recruit_status or "pending").lower()
+
+        if status != "done":
+            await interaction.response.send_message(
+                t(lang, "arma_roles_not_done"),
+                ephemeral=True,
+            )
+            return
+
+        role = guild.get_role(self.role_id)
+        if role is None:
+            await interaction.response.send_message(
+                t(lang, "arma_role_not_found"),
+                ephemeral=True,
+            )
+            return
+
+        try:
+            if role in member.roles:
+                await member.remove_roles(
+                    role,
+                    reason="ARMA role toggle via roles panel",
+                )
+                text = t(lang, "arma_role_removed").format(role=role.name)
+            else:
+                await member.add_roles(
+                    role,
+                    reason="ARMA role toggle via roles panel",
+                )
+                text = t(lang, "arma_role_added").format(role=role.name)
+
+            await interaction.response.send_message(text, ephemeral=True)
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                t(lang, "no_permission_manage_roles"),
+                ephemeral=True,
+            )
+
 
 
 # ------------ REGISTER RECRUIT BUTTON (DM) ------------
