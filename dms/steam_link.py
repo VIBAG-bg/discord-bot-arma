@@ -11,12 +11,15 @@ class SteamLinkModal(discord.ui.Modal):
     """Modal window to collect Steam ID from the user."""
 
     def __init__(self, member: discord.abc.User):
-        super().__init__(title="Link your Steam ID")
+        user = get_or_create_user(member.id)
+        lang = (user.language or "en") if user else "en"
+        super().__init__(title=t(lang, "steam_modal_title"))
         self.member = member
+        self.lang = lang
 
         self.steam_id_input = discord.ui.TextInput(
-            label="Your Steam ID / SteamID64",
-            placeholder="Example: 7656119XXXXXXXXXX",
+            label=t(lang, "steam_modal_label"),
+            placeholder=t(lang, "steam_modal_placeholder"),
             max_length=32,
             required=True,
         )
@@ -26,7 +29,7 @@ class SteamLinkModal(discord.ui.Modal):
         try:
             if interaction.user.id != self.member.id:
                 await interaction.response.send_message(
-                    "This form is bound to another user.",
+                    t(self.lang, "steam_modal_wrong_user"),
                     ephemeral=True,
                 )
                 return
@@ -36,7 +39,7 @@ class SteamLinkModal(discord.ui.Modal):
             user = get_or_create_user(self.member.id)
             lang = (user.language or "en") if user else "en"
 
-            # строгая валидация SteamID64
+            # Validate SteamID64 pattern
             if not (
                 steam_id.isdigit()
                 and len(steam_id) == 17
@@ -58,7 +61,7 @@ class SteamLinkModal(discord.ui.Modal):
             print(f"[SteamLinkModal ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             try:
                 await interaction.response.send_message(
-                    "Internal error while saving Steam ID. Contact staff.",
+                    t(self.lang, "steam_modal_error"),
                     ephemeral=True,
                 )
             except discord.InteractionResponded:
@@ -81,7 +84,7 @@ class LinkSteamButton(discord.ui.Button):
 
 
 class SteamLinkView(discord.ui.View):
-    """Отдельный view с одной кнопкой — удобно для DM / напоминаний."""
+    """View with a button to start the Steam ID linking modal in DM or onboarding flow."""
 
     def __init__(self, lang: str):
         super().__init__(timeout=900)
