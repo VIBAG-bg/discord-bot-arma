@@ -13,9 +13,9 @@ from dms.localization import t
 
 class RecruitModerationView(discord.ui.View):
     """
-    Кнопки для рекрутеров / модераторов:
-    - Approve: принять рекрута, выдать основную роль, снять рекрут-роль, архивнуть канал
-    - Deny: отклонить, снять рекрут-роль, закрыть доступ
+    Moderation view for approving or rejecting recruit applications:
+    - Approve: grants member role, sets status to done, archives channels
+    - Deny: sets status to rejected and archives channels
     """
 
     def __init__(
@@ -107,7 +107,7 @@ class RecruitModerationView(discord.ui.View):
                 )
 
     async def disable_buttons(self, interaction: discord.Interaction):
-        """Выключаем кнопки в исходном сообщении с карточкой рекрута."""
+        """Disable buttons after an action so no further input is possible."""
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
@@ -137,13 +137,13 @@ class RecruitModerationView(discord.ui.View):
     async def process_approve(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.followup.send("Guild not found.", ephemeral=True)
+            await interaction.followup.send(t("en", "guild_not_found"), ephemeral=True)
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
             await interaction.followup.send(
-                "Recruit not found on the server.",
+                t("en", "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
@@ -152,22 +152,10 @@ class RecruitModerationView(discord.ui.View):
         lang = (db_user.language or "en") if db_user else "en"
 
         if not getattr(db_user, "steam_id", None):
-            if lang == "ru":
-                text = (
-                    "У этого рекрута ещё не привязан **SteamID64**.\n\n"
-                    "Попросите его открыть личные сообщения с ботом и нажать кнопку "
-                    "**\"Link Steam ID\"** в сообщении онбординга.\n"
-                    "После этого вы сможете одобрить заявку."
-                )
-            else:
-                text = (
-                    "This recruit has not linked their **SteamID64** yet.\n\n"
-                    "Ask them to open their DMs with the bot and press the "
-                    "**\"Link Steam ID\"** button in the onboarding message.\n"
-                    "After that you can approve the application."
-                )
-
-            await interaction.followup.send(text, ephemeral=True)
+            await interaction.followup.send(
+                t(lang, "recruit_moderation_missing_steam"),
+                ephemeral=True,
+            )
             return
 
         set_recruit_status(self.recruit_id, "done")
@@ -183,7 +171,7 @@ class RecruitModerationView(discord.ui.View):
             member_role = guild.get_role(member_role_id)
             if member_role and member_role not in recruit.roles:
                 await recruit.add_roles(
-                    member_role, reason="Recruit approved – promoted to member"
+                    member_role, reason=f"Recruit approved by {interaction.user}"
                 )
 
         await self._archive_or_lock_channels(
@@ -196,23 +184,19 @@ class RecruitModerationView(discord.ui.View):
         channel = guild.get_channel(self.text_channel_id)
         if isinstance(channel, discord.TextChannel):
             await channel.send(
-                f"Recruit {recruit.mention} approved by {interaction.user.mention}."
+                t(lang, "recruit_moderation_approved_channel").format(
+                    recruit=recruit.mention,
+                    moderator=interaction.user.mention,
+                )
             )
 
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        msg_en = (
-            "Congratulations! Your recruit application has been approved. "
-            "Now you are a full member and got your member role! Welcome aboard!"
-        )
-        msg_ru = (
-            "Поздравляем! Ваша заявка рекрута была одобрена. "
-            "Теперь вы полноценный участник и получили роль! Добро пожаловать в команду!"
-        )
+        msg = t(lang, "recruit_moderation_dm_approved")
 
         try:
-            await recruit.send(msg_en if lang == "en" else msg_ru)
+            await recruit.send(msg)
         except discord.Forbidden:
             print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
         except Exception as e:
@@ -220,20 +204,20 @@ class RecruitModerationView(discord.ui.View):
 
         await self.disable_buttons(interaction)
         await interaction.followup.send(
-            "Recruit approved, channels archived.",
+            t(lang, "recruit_moderation_approved_followup"),
             ephemeral=True,
         )
 
     async def process_deny(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.followup.send("Guild not found.", ephemeral=True)
+            await interaction.followup.send(t("en", "guild_not_found"), ephemeral=True)
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
             await interaction.followup.send(
-                "Recruit not found on the server.",
+                t("en", "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
@@ -256,11 +240,10 @@ class RecruitModerationView(discord.ui.View):
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        msg_en = "Unfortunately, your recruit application has been rejected."
-        msg_ru = "К сожалению, ваша заявка рекрута была отклонена."
+        msg = t(lang, "recruit_moderation_dm_rejected")
 
         try:
-            await recruit.send(msg_en if lang == "en" else msg_ru)
+            await recruit.send(msg)
         except discord.Forbidden:
             print(f"[Recruit DM] Cannot DM {recruit} (forbidden)", file=sys.stderr)
         except Exception as e:
@@ -269,12 +252,15 @@ class RecruitModerationView(discord.ui.View):
         channel = guild.get_channel(self.text_channel_id)
         if isinstance(channel, discord.TextChannel):
             await channel.send(
-                f"Recruit {recruit.mention} rejected by {interaction.user.mention}."
+                t(lang, "recruit_moderation_rejected_channel").format(
+                    recruit=recruit.mention,
+                    moderator=interaction.user.mention,
+                )
             )
 
         await self.disable_buttons(interaction)
         await interaction.followup.send(
-            "Recruit denied, channels archived.",
+            t(lang, "recruit_moderation_rejected_followup"),
             ephemeral=True,
         )
 
@@ -284,13 +270,19 @@ class ConfirmApproveView(discord.ui.View):
         super().__init__(timeout=60)
         self.parent = parent
         self.lang = lang
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.style == discord.ButtonStyle.success:
+                    child.label = t(lang, "btn_yes")
+                elif child.style == discord.ButtonStyle.danger:
+                    child.label = t(lang, "btn_no")
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.success)
     async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         await self.parent.process_approve(interaction)
         try:
-            text = "Approved." if self.lang == "en" else "Одобрено."
+            text = t(self.lang, "recruit_moderation_confirm_yes")
             await interaction.message.edit(content=text, view=None)
         except Exception:
             pass
@@ -298,7 +290,7 @@ class ConfirmApproveView(discord.ui.View):
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.danger)
     async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
-        text = "Cancelled." if self.lang == "en" else "Отменено."
+        text = t(self.lang, "recruit_moderation_confirm_no")
         await interaction.response.edit_message(content=text, view=None)
         self.stop()
 
@@ -308,13 +300,19 @@ class ConfirmDenyView(discord.ui.View):
         super().__init__(timeout=60)
         self.parent = parent
         self.lang = lang
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.style == discord.ButtonStyle.danger:
+                    child.label = t(lang, "btn_yes")
+                elif child.style == discord.ButtonStyle.secondary:
+                    child.label = t(lang, "btn_no")
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.danger)
     async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         await self.parent.process_deny(interaction)
         try:
-            text = "Denied." if self.lang == "en" else "Отклонено."
+            text = t(self.lang, "recruit_moderation_denied_label")
             await interaction.message.edit(content=text, view=None)
         except Exception:
             pass
@@ -322,7 +320,7 @@ class ConfirmDenyView(discord.ui.View):
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)
     async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
-        text = "Cancelled." if self.lang == "en" else "Отменено."
+        text = t(self.lang, "recruit_moderation_confirm_no")
         await interaction.response.edit_message(content=text, view=None)
         self.stop()
 
@@ -330,7 +328,7 @@ class ConfirmDenyView(discord.ui.View):
 class ApproveRecruitButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
-            label="Approve",
+            label=t(getattr(Config, "DEFAULT_LANG", "en"), "btn_approve"),
             style=discord.ButtonStyle.success,
             custom_id="recruit_approve",
         )
@@ -340,7 +338,7 @@ class ApproveRecruitButton(discord.ui.Button):
 
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
-                "You are not allowed to approve recruits.",
+                t("en", "recruit_moderation_not_allowed_approve"),
                 ephemeral=True,
             )
             return
@@ -348,14 +346,14 @@ class ApproveRecruitButton(discord.ui.Button):
         guild = interaction.guild or interaction.client.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
-                "Guild not found.", ephemeral=True
+                t("en", "guild_not_found"), ephemeral=True
             )
             return
 
         recruit = guild.get_member(view.recruit_id)
         if recruit is None:
             await interaction.response.send_message(
-                "Recruit not found on the server.",
+                t("en", "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
@@ -363,10 +361,8 @@ class ApproveRecruitButton(discord.ui.Button):
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        question = (
-            f"Are you sure you want to **APPROVE** {recruit.mention}?"
-            if lang == "en"
-            else f"Вы уверены, что хотите **ОДОБРИТЬ** {recruit.mention}?"
+        question = t(lang, "recruit_moderation_confirm_approve").format(
+            recruit=recruit.mention
         )
 
         confirm_view = ConfirmApproveView(parent=view, lang=lang)
@@ -381,7 +377,7 @@ class ApproveRecruitButton(discord.ui.Button):
 class DenyRecruitButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
-            label="Deny",
+            label=t(getattr(Config, "DEFAULT_LANG", "en"), "btn_deny"),
             style=discord.ButtonStyle.danger,
             custom_id="recruit_deny",
         )
@@ -391,7 +387,7 @@ class DenyRecruitButton(discord.ui.Button):
 
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
-                "You are not allowed to deny recruits.",
+                t("en", "recruit_moderation_not_allowed_deny"),
                 ephemeral=True,
             )
             return
@@ -399,14 +395,14 @@ class DenyRecruitButton(discord.ui.Button):
         guild = interaction.guild or interaction.client.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
-                "Guild not found.", ephemeral=True
+                t("en", "guild_not_found"), ephemeral=True
             )
             return
 
         recruit = guild.get_member(view.recruit_id)
         if recruit is None:
             await interaction.response.send_message(
-                "Recruit not found on the server.",
+                t("en", "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
@@ -414,10 +410,8 @@ class DenyRecruitButton(discord.ui.Button):
         db_user = get_or_create_user_from_member(recruit)
         lang = (db_user.language or "en") if db_user else "en"
 
-        question = (
-            f"Are you sure you want to **DENY** {recruit.mention}?"
-            if lang == "en"
-            else f"Вы уверены, что хотите **ОТКЛОНИТЬ** {recruit.mention}?"
+        question = t(lang, "recruit_moderation_confirm_deny").format(
+            recruit=recruit.mention
         )
 
         confirm_view = ConfirmDenyView(parent=view, lang=lang)
@@ -436,9 +430,9 @@ async def send_recruit_moderation_embed(
     voice_ch: discord.VoiceChannel,
 ):
     """
-    Шлём в текстовый канал рекрута:
-    - embed-карточку
-    - view с кнопками Approve / Deny
+    Send the recruit moderation embed:
+    - embed with recruit info
+    - view with Approve / Deny buttons
     """
     user = get_or_create_user_from_member(member)
     lang = user.language or "en"
@@ -458,13 +452,13 @@ async def send_recruit_moderation_embed(
     )
 
     embed.add_field(
-        name="Recruit code",
+        name=t(lang, "recruit_embed_field_code"),
         value=recruit_code,
         inline=False,
     )
 
     embed.add_field(
-        name="Discord",
+        name=t(lang, "recruit_embed_field_discord"),
         value=(
             f"{member.mention}\n"
             f"Display name: **{member.display_name}**\n"
@@ -476,35 +470,35 @@ async def send_recruit_moderation_embed(
 
     if steam_url:
         embed.add_field(
-            name="Steam",
+            name=t(lang, "recruit_embed_field_steam"),
             value=f"ID: `{user.steam_id}`\n[Open profile]({steam_url})",
             inline=False,
         )
     else:
         embed.add_field(
-            name="Steam",
-            value="Not linked",
+            name=t(lang, "recruit_embed_field_steam"),
+            value=t(lang, "recruit_embed_steam_not_linked"),
             inline=False,
         )
 
     lang_name = {
-        "ru": "Русский",
-        "en": "English",
-    }.get(user.language, "English")
+        "ru": t(lang, "language_name_ru"),
+        "en": t(lang, "language_name_en"),
+    }.get(user.language, t(lang, "language_name_en"))
 
     embed.add_field(
-        name="Language",
+        name=t(lang, "recruit_embed_field_language"),
         value=lang_name,
         inline=True,
     )
 
     embed.add_field(
-        name="Status",
+        name=t(lang, "recruit_embed_field_status"),
         value=t(lang, "recruit_embed_status_ready"),
         inline=True,
     )
 
-    embed.set_footer(text="Use this channel to schedule and run the interview.")
+    embed.set_footer(text=t(lang, "recruit_embed_footer_interview"))
 
     role = guild.get_role(Config.RECRUITER_ROLE_ID)
     content = f"{member.mention} {role.mention}" if role else member.mention

@@ -121,12 +121,12 @@ LANGS = {
         ),
         "command_guild_only": "This command can only be used in a guild.",
         "user_updates_done": "Updated {updated} users from guild `{guild}`.",
-        "help_title": "Help • ARMA 3 Bot",
+        "help_title": "Справка • ARMA 3 Bot",
         "help_description": (
             "Available commands by category.\n"
             "Use `{prefix}help <command>` to see details."
         ),
-        "help_admin_commands": "🔒 Admin commands",
+        "help_admin_commands": "🔒 Команды администраторов",
         "help_general_category": "General",
         "help_command_line": "`{signature}` — {description}",
         "help_command_title": "Command: {signature}",
@@ -151,6 +151,10 @@ LANGS = {
         "help_desc_clear": "Delete multiple recent messages.",
         "help_desc_mute": "Timeout (mute) a member for a duration.",
         "help_desc_unmute": "Remove timeout from a member.",
+        "btn_yes": "Yes",
+        "btn_no": "No",
+        "btn_approve": "Approve",
+        "btn_deny": "Deny",
         "mod_cannot_target_self_kick": "🚫 You cannot kick yourself!",
         "mod_cannot_target_self_ban": "🚫 You cannot ban yourself!",
         "mod_cannot_target_self_mute": "🚫 You cannot mute yourself!",
@@ -184,6 +188,31 @@ LANGS = {
         "mod_user_not_found_or_not_banned": "🚫 User not found or not banned.",
         "role_with_description": "{mention} - {desc}",
         "recruit_category_not_configured": "Recruit category is not configured correctly.",
+        "recruit_not_found_server": "Recruit not found on the server.",
+        "recruit_moderation_missing_steam": (
+            "This recruit has not linked their **SteamID64** yet.\n\n"
+            "Ask them to open their DMs with the bot and press the "
+            "**\"Link Steam ID\"** button in the onboarding message.\n"
+            "After that you can approve the application."
+        ),
+        "recruit_moderation_dm_approved": (
+            "Congratulations! Your recruit application has been approved. "
+            "Now you are a full member and got your member role! Welcome aboard!"
+        ),
+        "recruit_moderation_dm_rejected": (
+            "Unfortunately, your recruit application has been rejected."
+        ),
+        "recruit_moderation_approved_followup": "Recruit approved, channels archived.",
+        "recruit_moderation_rejected_followup": "Recruit denied, channels archived.",
+        "recruit_moderation_approved_channel": "Recruit {recruit} approved by {moderator}.",
+        "recruit_moderation_rejected_channel": "Recruit {recruit} rejected by {moderator}.",
+        "recruit_moderation_confirm_approve": "Are you sure you want to **APPROVE** {recruit}?",
+        "recruit_moderation_confirm_deny": "Are you sure you want to **DENY** {recruit}?",
+        "recruit_moderation_not_allowed_approve": "You are not allowed to approve recruits.",
+        "recruit_moderation_not_allowed_deny": "You are not allowed to deny recruits.",
+        "recruit_moderation_confirm_yes": "Approved.",
+        "recruit_moderation_confirm_no": "Cancelled.",
+        "recruit_moderation_denied_label": "Denied.",
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -457,12 +486,12 @@ LANGS = {
         ),
         "command_guild_only": "Эту команду можно использовать только на сервере.",
         "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
-        "help_title": "Help • ARMA 3 Bot",
+        "help_title": "Справка • ARMA 3 Bot",
         "help_description": (
             "Доступные команды по категориям.\n"
             "Используйте `{prefix}help <command>`, чтобы увидеть подробности."
         ),
-        "help_admin_commands": "🔒 Admin commands",
+        "help_admin_commands": "🔒 Команды администраторов",
         "help_general_category": "Общие",
         "help_command_line": "`{signature}` — {description}",
         "help_command_title": "Команда: {signature}",
@@ -487,6 +516,10 @@ LANGS = {
         "help_desc_clear": "Удалить несколько последних сообщений.",
         "help_desc_mute": "Выдать тайм-аут (мьют) участнику на время.",
         "help_desc_unmute": "Снять тайм-аут с участника.",
+        "btn_yes": "Да",
+        "btn_no": "Нет",
+        "btn_approve": "Одобрить",
+        "btn_deny": "Отклонить",
         "mod_cannot_target_self_kick": "🚫 Нельзя кикнуть себя.",
         "mod_cannot_target_self_ban": "🚫 Нельзя забанить себя.",
         "mod_cannot_target_self_mute": "🚫 Нельзя замьютить себя.",
@@ -520,6 +553,31 @@ LANGS = {
         "mod_user_not_found_or_not_banned": "🚫 Пользователь не найден или не забанен.",
         "role_with_description": "{mention} - {desc}",
         "recruit_category_not_configured": "Категория для рекрутов настроена некорректно.",
+        "recruit_not_found_server": "Рекрут не найден на сервере.",
+        "recruit_moderation_missing_steam": (
+            "Этот рекрут ещё не привязал свой **SteamID64**.\n\n"
+            "Попросите его открыть личные сообщения с ботом и нажать кнопку "
+            "**\"Link Steam ID\"** в онбординг-сообщении.\n"
+            "После этого можно одобрить заявку."
+        ),
+        "recruit_moderation_dm_approved": (
+            "Поздравляем! Ваша заявка рекрута одобрена. "
+            "Теперь вы полноценный участник и получили роль участника! Добро пожаловать!"
+        ),
+        "recruit_moderation_dm_rejected": (
+            "К сожалению, ваша заявка рекрута отклонена."
+        ),
+        "recruit_moderation_approved_followup": "Рекрут одобрен, каналы архивированы.",
+        "recruit_moderation_rejected_followup": "Рекрут отклонён, каналы архивированы.",
+        "recruit_moderation_approved_channel": "Рекрут {recruit} одобрен {moderator}.",
+        "recruit_moderation_rejected_channel": "Рекрут {recruit} отклонён {moderator}.",
+        "recruit_moderation_confirm_approve": "Вы уверены, что хотите **ОДОБРИТЬ** {recruit}?",
+        "recruit_moderation_confirm_deny": "Вы уверены, что хотите **ОТКЛОНИТЬ** {recruit}?",
+        "recruit_moderation_not_allowed_approve": "У вас нет права одобрять рекрутов.",
+        "recruit_moderation_not_allowed_deny": "У вас нет права отклонять рекрутов.",
+        "recruit_moderation_confirm_yes": "Одобрено.",
+        "recruit_moderation_confirm_no": "Отменено.",
+        "recruit_moderation_denied_label": "Отклонено.",
         "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
     },
 }
@@ -529,6 +587,9 @@ def t(lang: str, key: str) -> str:
     """Simple translation helper."""
     data = LANGS.get(lang) or LANGS["en"]
     return data.get(key) or LANGS["en"].get(key, key)
+
+
+
 
 
 
