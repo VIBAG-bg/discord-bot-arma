@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from typing import Optional
 from dms.localization import t
+from database.service import get_or_create_user_from_member
 
 
 class Moderation(commands.Cog):
@@ -22,7 +23,10 @@ class Moderation(commands.Cog):
         
         Requires: Kick Members permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_kick"))
             return
@@ -65,7 +69,10 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_ban"))
             return
@@ -108,7 +115,10 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         try:
             user = await self.bot.fetch_user(user_id)
             await ctx.guild.unban(user, reason=reason)
@@ -144,7 +154,10 @@ class Moderation(commands.Cog):
         Maximum: 100 messages
         Requires: Manage Messages permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         if amount < 1:
             await ctx.send(t(lang, "mod_clear_amount_min"))
             return
@@ -178,7 +191,10 @@ class Moderation(commands.Cog):
         Default duration: 60 minutes
         Requires: Moderate Members permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_mute"))
             return
@@ -228,7 +244,10 @@ class Moderation(commands.Cog):
         
         Requires: Moderate Members permission
         """
-        lang = getattr(ctx, "language", None) or "en"
+        lang = "en"
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            lang = user.language or "en"
         try:
             await member.timeout(None, reason=reason)
             

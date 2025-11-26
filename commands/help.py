@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from database.service import get_or_create_user_from_member
 from dms.localization import t
 
 
@@ -33,7 +34,11 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         - then iterates through non-admin commands by cogs.
         """
         prefix = self._get_prefix()
-        lang = getattr(self.context, "language", None) or "en"
+        author = getattr(self.context, "author", None)
+        lang = "en"
+        if isinstance(author, discord.Member):
+            user = get_or_create_user_from_member(author)
+            lang = user.language or "en"
 
         embed = discord.Embed(
             title=t(lang, "help_title"),
@@ -107,7 +112,11 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
     async def send_command_help(self, command: commands.Command):
         """Help for a specific command: !help onboarding_for"""
         sig = self.get_command_signature(command)
-        lang = getattr(self.context, "language", None) or "en"
+        author = getattr(self.context, "author", None)
+        lang = "en"
+        if isinstance(author, discord.Member):
+            user = get_or_create_user_from_member(author)
+            lang = user.language or "en"
         embed = discord.Embed(
             title=t(lang, "help_command_title").format(signature=sig),
             description=command.help or command.short_doc or t(lang, "no_description"),
@@ -122,7 +131,11 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         if not commands_list:
             return
 
-        lang = getattr(self.context, "language", None) or "en"
+        author = getattr(self.context, "author", None)
+        lang = "en"
+        if isinstance(author, discord.Member):
+            user = get_or_create_user_from_member(author)
+            lang = user.language or "en"
         embed = discord.Embed(
             title=t(lang, "help_category_title").format(name=cog.qualified_name),
             description=cog.__doc__ or t(lang, "no_description"),
