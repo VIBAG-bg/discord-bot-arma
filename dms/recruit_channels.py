@@ -9,6 +9,7 @@ from database.service import (
     get_recruit_code,
     set_recruit_channels,
 )
+from dms.localization import t
 
 _active_locks: dict[int, asyncio.Lock] = {}
 
@@ -18,20 +19,20 @@ async def ensure_recruit_channels(
     member: discord.Member,
 ) -> tuple[discord.TextChannel, discord.VoiceChannel, bool]:
     """
-    Гарантированно вернуть (или создать) каналы рекрута.
-    Всегда возвращает ТРИ значения.
+    Ensure interview channels (text and voice) exist for a recruit.
+    Returns the channels and a flag indicating whether they were newly created.
     """
     user = get_or_create_user_from_member(member)
     lock = _active_locks.setdefault(user.discord_id, asyncio.Lock())
 
     async with lock:
-        # перепривязка (вдруг БД обновилась)
+        # Re-read user under lock to avoid races
         user = get_or_create_user_from_member(member)
 
         text_ch = None
         voice_ch = None
 
-        # проверяем существующие каналы
+        # Try to reuse existing channels
         if user.recruit_text_channel_id:
             ch = guild.get_channel(user.recruit_text_channel_id)
             if isinstance(ch, discord.TextChannel):
@@ -42,11 +43,11 @@ async def ensure_recruit_channels(
             if isinstance(ch, discord.VoiceChannel):
                 voice_ch = ch
 
-        # если оба канала существуют
+        # Return existing channels if both are present
         if text_ch and voice_ch:
             return text_ch, voice_ch, False
 
-        # иначе создаём
+        # Otherwise create new channels
         try:
             text_ch, voice_ch = await create_recruit_channels(guild, member)
         except Exception as e:
@@ -59,18 +60,20 @@ async def ensure_recruit_channels(
         return text_ch, voice_ch, True
 
 
-
 async def create_recruit_channels(
     guild: discord.Guild,
     member: discord.Member,
 ) -> tuple[discord.TextChannel, discord.VoiceChannel]:
     """
-    Создаём личный текстовый и голосовой каналы для рекрута.
-    Возвращаем (text_channel, voice_channel).
+    Create dedicated text and voice channels for recruit interviews.
+    Returns (text_channel, voice_channel).
     """
+    user = get_or_create_user_from_member(member)
+    lang = user.language or getattr(Config, "DEFAULT_LANG", "en")
+
     category = guild.get_channel(Config.RECRUIT_CATEGORY_ID)
     if category is None or not isinstance(category, discord.CategoryChannel):
-        raise RuntimeError("Recruit category is not configured correctly.")
+        raise RuntimeError(t(lang, "recruit_category_not_configured"))
 
     overwrites: dict[discord.abc.Snowflake, discord.PermissionOverwrite] = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
@@ -94,7 +97,6 @@ async def create_recruit_channels(
                 speak=True,
             )
 
-    user = get_or_create_user_from_member(member)
     code = get_recruit_code(user)
 
     base_name = f"recruit-{member.name.lower()}-{code}"
