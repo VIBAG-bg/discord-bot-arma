@@ -29,6 +29,42 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
+        "ping_title": "Pong!",
+        "ping_description": "Bot latency: **{latency}ms**",
+        "info_title": "Bot Information",
+        "info_description": "ARMA 3 Community Discord Bot",
+        "info_field_bot": "Bot",
+        "info_field_servers": "Servers",
+        "info_field_users": "Users",
+        "info_field_uptime": "Uptime",
+        "info_uptime_value": "{hours}h {minutes}m {seconds}s",
+        "info_field_python_version": "Python Version",
+        "info_field_discordpy_version": "discord.py Version",
+        "requested_by": "Requested by {requester}",
+        "serverinfo_title": "Server Information: {name}",
+        "serverinfo_owner": "Owner",
+        "serverinfo_members": "Members",
+        "serverinfo_channels": "Channels",
+        "serverinfo_channels_value": "Text: {text} | Voice: {voice}",
+        "serverinfo_roles": "Roles",
+        "serverinfo_id": "Server ID",
+        "serverinfo_created_at": "Created At",
+        "unknown_value": "Unknown",
+        "userinfo_title": "User Information",
+        "userinfo_name": "Name",
+        "userinfo_nickname": "Nickname",
+        "userinfo_no_nickname": "None",
+        "userinfo_id": "User ID",
+        "userinfo_status": "Status",
+        "userinfo_joined": "Joined Server",
+        "userinfo_created": "Account Created",
+        "userinfo_roles_title": "Roles [{count}]",
+        "roles_count_only": "{count} roles",
+        "avatar_title": "{name}'s Avatar",
+        "avatar_download_links": "Download Links",
+        "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
+        "avatar_no_custom": "This user has no custom avatar.",
+        "say_nothing_to_send": "Nothing to send.",
         "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
         "recruit_already_applied": (
@@ -48,35 +84,33 @@ LANGS = {
             "I cannot grant the recruit role. "
             "Please contact the staff; I may be missing permissions."
         ),
-
         "game_role_not_found": "Configured role not found on server.",
         "no_permission_manage_roles": "I don't have permission to manage your roles.",
 
-        # Новый онбординг
+        # Onboarding
         "onboarding_title": "Welcome to the ARMA 3 tactical community",
         "onboarding_body": (
             "We focus on coordination, discipline and joint operations.\n"
             "Use the buttons below to set up your profile:"
         ),
         "btn_games": "Game roles",
-        "btn_recruit": "Register as Recruit",
+        "btn_recruit": "Become a recruit",
         "btn_steam": "Link Steam ID",
 
-        # Игровые роли
+        # Game roles
         "game_roles_title": "Choose your game roles",
         "game_roles_body": "Click a button to toggle a role. Click again to remove it.",
         "game_role_added": "Role **{role}** added.",
         "game_role_removed": "Role **{role}** removed.",
         "no_game_roles": "No game roles are configured yet.",
 
-        
         "game_roles_panel_title": "Game roles",
         "game_roles_panel_body": (
             "Press the button below to open the game roles menu.\n"
             "In that menu you can enable or disable roles by clicking the buttons."
         ),
 
-        # Ошибки
+        # Errors
         "guild_not_found": "Server not found. Contact staff.",
         "not_in_guild": "I cannot find you on the server. Rejoin or contact staff.",
 
@@ -90,10 +124,8 @@ LANGS = {
 
         "btn_games_panel": "Select game role",
         "btn_arma_panel": "Select ARMA role",
-        "btn_recruit": "Become a recruit",
 
         "no_roles_configured": "No roles are configured in the bot config.",
-        "no_game_roles": "No game roles are configured.",
         "no_arma_roles": "No ARMA operation roles are configured.",
 
         "arma_roles_title": "ARMA operation roles",
@@ -108,7 +140,6 @@ LANGS = {
         "arma_role_not_found": "This ARMA role is not configured or no longer exists.",
         "arma_role_added": "ARMA role **{role}** has been assigned.",
         "arma_role_removed": "ARMA role **{role}** has been removed.",
-
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -138,6 +169,42 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
+        "ping_title": "Понг!",
+        "ping_description": "Задержка бота: **{latency} мс**",
+        "info_title": "Информация о боте",
+        "info_description": "Discord-бот сообщества ARMA 3",
+        "info_field_bot": "Бот",
+        "info_field_servers": "Серверы",
+        "info_field_users": "Пользователи",
+        "info_field_uptime": "Время работы",
+        "info_uptime_value": "{hours}ч {minutes}м {seconds}с",
+        "info_field_python_version": "Версия Python",
+        "info_field_discordpy_version": "Версия discord.py",
+        "requested_by": "Запрошено пользователем {requester}",
+        "serverinfo_title": "Информация о сервере: {name}",
+        "serverinfo_owner": "Владелец",
+        "serverinfo_members": "Участники",
+        "serverinfo_channels": "Каналы",
+        "serverinfo_channels_value": "Текст: {text} | Голос: {voice}",
+        "serverinfo_roles": "Роли",
+        "serverinfo_id": "ID сервера",
+        "serverinfo_created_at": "Создан",
+        "unknown_value": "Неизвестно",
+        "userinfo_title": "Информация о пользователе",
+        "userinfo_name": "Имя",
+        "userinfo_nickname": "Никнейм",
+        "userinfo_no_nickname": "Отсутствует",
+        "userinfo_id": "ID пользователя",
+        "userinfo_status": "Статус",
+        "userinfo_joined": "Присоединился к серверу",
+        "userinfo_created": "Аккаунт создан",
+        "userinfo_roles_title": "Роли [{count}]",
+        "roles_count_only": "{count} ролей",
+        "avatar_title": "Аватар пользователя {name}",
+        "avatar_download_links": "Ссылки для скачивания",
+        "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
+        "avatar_no_custom": "У этого пользователя нет собственного аватара.",
+        "say_nothing_to_send": "Нет текста для отправки.",
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
         "recruit_already_applied": (
@@ -157,7 +224,6 @@ LANGS = {
             "Я не могу выдать роль рекрута. "
             "Похоже, не хватает прав. Обратись к администрации."
         ),
-
         "game_role_not_found": "Настроенная игровая роль не найдена на сервере.",
         "no_permission_manage_roles": "У меня нет прав управлять твоими ролями.",
 
@@ -198,10 +264,8 @@ LANGS = {
 
         "btn_games_panel": "Получить роль игры",
         "btn_arma_panel": "Получить роль по АРМЕ",
-        "btn_recruit": "Стать рекрутом",
 
         "no_roles_configured": "В конфиге бота не настроены роли.",
-        "no_game_roles": "Игровые роли не настроены.",
         "no_arma_roles": "Роли для АРМА-операций не настроены.",
 
         "arma_roles_title": "Роли для АРМА-операций",
