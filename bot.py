@@ -20,6 +20,7 @@ from database.service import (
     update_discord_profile,
     set_recruit_status,
 )
+from dms.localization import t
 
 
 # Configure bot intents
@@ -33,8 +34,22 @@ bot = commands.Bot(
     command_prefix=Config.PREFIX,
     intents=intents,
     help_command=EmbedHelpCommand(),
-    description="ARMA 3 Community Discord Bot"
+    description=t(getattr(Config, "DEFAULT_LANG", "en"), "bot_description"),
 )
+
+
+def _get_lang_from_ctx(ctx: commands.Context) -> str:
+    """Return preferred language for the author or default language."""
+    if isinstance(getattr(ctx, "author", None), discord.Member):
+        user = get_or_create_user_from_member(ctx.author)
+        return user.language or getattr(Config, "DEFAULT_LANG", "en")
+    return getattr(Config, "DEFAULT_LANG", "en")
+
+
+def _get_lang_from_member(member: discord.Member) -> str:
+    """Return preferred language for a member or default language."""
+    user = get_or_create_user_from_member(member)
+    return user.language or getattr(Config, "DEFAULT_LANG", "en")
 
 
 @bot.event
@@ -49,8 +64,11 @@ async def on_ready():
     # Register UI View globally (persistent across restarts)
     #bot.add_view(RoleSelectionView(bot_client=bot))
 
+    default_lang = getattr(Config, "DEFAULT_LANG", "en")
     await bot.change_presence(
-        activity=discord.Game(name=f"{Config.PREFIX}help | ARMA 3")
+        activity=discord.Game(
+            name=t(default_lang, "presence_help_hint").format(prefix=Config.PREFIX)
+        )
     )
 
 
@@ -59,25 +77,29 @@ async def on_member_remove(member: discord.Member):
     """Notify when someone leaves the server."""
     channel = discord.utils.get(member.guild.text_channels, name="general")
     if channel:
-        await channel.send(f"{member.name} has left the server.")
+        lang = _get_lang_from_member(member)
+        await channel.send(t(lang, "member_left_server").format(name=member.name))
 
 
 @bot.event
 async def on_command_error(ctx, error):
     """Global command error handler."""
+    lang = _get_lang_from_ctx(ctx)
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send("Command not found. Use `!help` to see available commands.")
+        await ctx.send(t(lang, "command_not_found").format(prefix=ctx.clean_prefix))
     elif isinstance(error, commands.MissingPermissions):
-        await ctx.send("You do not have permission to use this command.")
+        await ctx.send(t(lang, "missing_permissions"))
     elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Missing required argument: {error.param}")
+        await ctx.send(t(lang, "missing_required_argument").format(param=error.param))
     elif isinstance(error, commands.BadArgument):
-        await ctx.send(f"Bad argument: {error}")
+        await ctx.send(t(lang, "bad_argument").format(error=error))
     elif isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(f"This command is on cooldown. Try again in {error.retry_after:.2f}s")
+        await ctx.send(
+            t(lang, "command_on_cooldown").format(retry_after=error.retry_after)
+        )
     else:
         print(f"Error: {error}", file=sys.stderr)
-        await ctx.send("An error occurred while executing the command.")
+        await ctx.send(t(lang, "error_generic"))
 
 
 @bot.event
@@ -120,17 +142,7 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             set_recruit_status(after.id, "ready")
 
         if not getattr(user, "steam_id", None):
-            msg_en = (
-                "You have been granted the **Recruit** role by staff.\n\n"
-                "To complete your registration, please link your SteamID64.\n"
-                "Press the button below and fill in the form."
-            )
-            msg_ru = (
-                "Тебе выдали роль **Recruit**.\n\n"
-                "Чтобы завершить регистрацию, привяжи свой SteamID64.\n"
-                "Нажми на кнопку ниже и заполни форму."
-            )
-            text = msg_en if lang == "en" else msg_ru
+            text = t(lang, "recruit_auto_granted")
 
             try:
                 await after.send(text, view=SteamLinkView(lang))

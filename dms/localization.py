@@ -5,6 +5,7 @@ LANGS = {
         "greeting": "Hello, {name}!",
         "roles_header": "Available server roles:",
         "roles_hint": "Press role buttons below to assign them instantly.",
+        "bot_description": "ARMA 3 Community Discord Bot",
         "recruit_hint": (
             "To register as an ARMA 3 recruit:\n"
             "→ Press the green 'Register as Recruit' button."
@@ -121,6 +122,12 @@ LANGS = {
         ),
         "command_guild_only": "This command can only be used in a guild.",
         "user_updates_done": "Updated {updated} users from guild `{guild}`.",
+        "command_not_found": "Command not found. Use `{prefix}help` to see available commands.",
+        "missing_permissions": "You do not have permission to use this command.",
+        "missing_required_argument": "Missing required argument: {param}",
+        "bad_argument": "Bad argument: {error}",
+        "command_on_cooldown": "This command is on cooldown. Try again in {retry_after:.2f}s",
+        "error_generic": "An error occurred while executing the command.",
         "help_title": "Справка • ARMA 3 Bot",
         "help_description": (
             "Available commands by category.\n"
@@ -295,11 +302,19 @@ LANGS = {
             "{member}, enable direct messages so I can send your onboarding instructions. "
             "After this, please send the `{command}` command on the server."
         ),
+        "presence_help_hint": "{prefix}help | ARMA 3",
+        "member_left_server": "{name} has left the server.",
+        "recruit_auto_granted": (
+            "You have been granted the **Recruit** role by staff.\n\n"
+            "To complete your registration, please link your SteamID64.\n"
+            "Press the button below and fill in the form."
+        ),
     },
     "ru": {
         "greeting": "Привет, {name}!",
         "roles_header": "Доступные роли на сервере:",
         "roles_hint": "Нажмите на кнопки ролей ниже, чтобы выдать их себе.",
+        "bot_description": "Discord-бот сообщества ARMA 3",
         "recruit_hint": (
             "Чтобы зарегистрироваться рекрутом ARMA 3:\n"
             "→ Нажмите зелёную кнопку «Register as Recruit»."
@@ -474,6 +489,13 @@ LANGS = {
             "{member}, включите личные сообщения, чтобы я мог отправить инструкции по онбордингу. "
             "После этого отправьте команду `{command}` на сервере."
         ),
+        "presence_help_hint": "{prefix}help | ARMA 3",
+        "member_left_server": "{name} покинул сервер.",
+        "recruit_auto_granted": (
+            "Вам выдали роль **Recruit**.\n\n"
+            "Чтобы завершить регистрацию, привяжите ваш SteamID64.\n"
+            "Нажмите кнопку ниже и заполните форму."
+        ),
         "recruit_info_title": "Информация о рекруте",
         "recruit_field_text_channel": "Текстовый канал",
         "recruit_field_voice_channel": "Голосовой канал",
@@ -491,6 +513,12 @@ LANGS = {
         ),
         "command_guild_only": "Эту команду можно использовать только на сервере.",
         "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
+        "command_not_found": "Команда не найдена. Используйте `{prefix}help`, чтобы увидеть список команд.",
+        "missing_permissions": "У вас нет прав использовать эту команду.",
+        "missing_required_argument": "Отсутствует обязательный аргумент: {param}",
+        "bad_argument": "Некорректный аргумент: {error}",
+        "command_on_cooldown": "Эта команда на кулдауне. Попробуйте через {retry_after:.2f} сек.",
+        "error_generic": "Произошла ошибка при выполнении команды.",
         "help_title": "Справка • ARMA 3 Bot",
         "help_description": (
             "Доступные команды по категориям.\n"
