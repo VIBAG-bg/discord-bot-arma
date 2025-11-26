@@ -21,15 +21,16 @@ from database.service import (
 RECRUIT_ROLE_ID = Config.RECRUIT_ROLE_ID
 
 
-# --------- ВСПОМОГАТЕЛЬНОЕ ---------
+# --------- Config helpers ---------
 
 
 def _get_game_role_definitions():
-    """Берём игровые роли из конфига, но не падаем, если их нет."""
+    """Return configured game role definitions or an empty list."""
     return getattr(Config, "GAME_ROLE_DEFINITIONS", []) or []
 
+
 def _get_arma_role_definitions():
-    """Роли для АРМА-специализаций."""
+    """Return configured ARMA role definitions or an empty list."""
     return getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or []
 
 
@@ -43,7 +44,7 @@ def _build_arma_roles_embed(lang: str) -> discord.Embed:
 
 
 def _build_onboarding_embed(member: discord.Member, lang: str) -> discord.Embed:
-    """Главное приветственное сообщение после выбора языка."""
+    """Build the onboarding embed that greets a user and links to setup actions."""
     greeting = t(lang, "greeting").format(name=member.display_name)
     body = t(lang, "onboarding_body")
     intro = Config.WELCOME_MESSAGE_ENG if lang == "en" else Config.WELCOME_MESSAGE_RUS
@@ -66,15 +67,15 @@ def _build_game_roles_embed(lang: str) -> discord.Embed:
     )
 
 
-# --------- VIEW С ТРЕМЯ КНОПКАМИ ПОСЛЕ ВЫБОРА ЯЗЫКА ---------
+# --------- Views for interactive onboarding in DMs ---------
 
 
 class OnboardingMainView(discord.ui.View):
     """
-    Главное меню онбординга в ЛС:
-    - Игровые роли
-    - Стать рекрутом
-    - Привязать Steam ID
+    Main onboarding view with entry points to:
+    - Choose game roles
+    - Register as recruit
+    - Link Steam ID
     """
 
     def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
@@ -91,7 +92,7 @@ class OnboardingMainView(discord.ui.View):
 class ChooseGamesButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
-            label=t("en", "btn_games"),  # реальный язык возьмём из view
+            label=t("en", "btn_games"),  # Use English label for a consistent entry point
             style=discord.ButtonStyle.secondary,
             custom_id="choose_games",
         )
@@ -108,7 +109,7 @@ class ChooseGamesButton(discord.ui.Button):
             )
             return
 
-        # На всякий пожарный достаём участника
+        # Make sure the member exists and can be fetched
         member = guild.get_member(interaction.user.id)
         if member is None:
             try:
@@ -138,7 +139,7 @@ class ChooseGamesButton(discord.ui.Button):
 
 
 class GameRolesView(discord.ui.View):
-    """View с кнопками по играм, которые просто тумблерят роли."""
+    """View that lists configured game roles and lets the user toggle them."""
 
     def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
         super().__init__(timeout=300)
@@ -158,7 +159,7 @@ class GameRoleToggleButton(discord.ui.Button):
             role_cfg.get("label_ru")
             if lang == "ru"
             else role_cfg.get("label_en")
-        ) or role_cfg.get("label") or "Role"
+        ) or role_cfg.get("label") or t(lang, "role_default_label")
 
         emoji = role_cfg.get("emoji")
 
@@ -220,9 +221,8 @@ class GameRoleToggleButton(discord.ui.Button):
             )
 
 
-
 class ArmaRolesView(discord.ui.View):
-    """View с кнопками ролей для АРМА-операций (только для recruit_status='done')."""
+    """View for ARMA operation roles available only to recruits with status 'done'."""
 
     def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
         super().__init__(timeout=300)
@@ -242,7 +242,7 @@ class ArmaRoleToggleButton(discord.ui.Button):
             role_cfg.get("label_ru")
             if lang == "ru"
             else role_cfg.get("label_en")
-        ) or role_cfg.get("label") or "Role"
+        ) or role_cfg.get("label") or t(lang, "role_default_label")
 
         emoji = role_cfg.get("emoji")
 
@@ -276,7 +276,7 @@ class ArmaRoleToggleButton(discord.ui.Button):
                 )
                 return
 
-        from database.service import get_or_create_user_from_member  # чтобы не городить циклы импорта наверху
+        from database.service import get_or_create_user_from_member  # Local import to keep context fresh
         user = get_or_create_user_from_member(member)
         status = (user.recruit_status or "pending").lower()
 
@@ -317,7 +317,6 @@ class ArmaRoleToggleButton(discord.ui.Button):
             )
 
 
-
 # ------------ REGISTER RECRUIT BUTTON (DM) ------------
 
 
@@ -348,11 +347,11 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # актуализируем профиль и читаем язык
+        # Refresh user data to get language preference
         user = get_or_create_user_from_member(member)
         lang = user.language or view.lang or "en"
 
-        # проверяем статус рекрута по БД
+        # Prevent duplicate applications when status already set
         status = (user.recruit_status or "pending").lower()
         if status in ("ready", "done"):
             await interaction.response.send_message(
@@ -361,7 +360,7 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # если уже есть каналы рекрута – не плодим дубликаты
+        # Prevent duplicate channels if they already exist
         if user.recruit_text_channel_id or user.recruit_voice_channel_id:
             await interaction.response.send_message(
                 t(lang, "recruit_already_applied"),
@@ -369,9 +368,9 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # проверка Steam ID
+        # Require a linked Steam ID
         if not user.steam_id:
-            # даём текст + кнопку для модалки
+            # Remind to link Steam ID first
             await interaction.response.send_message(
                 t(lang, "steam_link"),
                 view=SteamLinkView(lang),
@@ -411,39 +410,36 @@ class RegisterRecruitButton(discord.ui.Button):
             )
             return
 
-        # статус в БД
+        # Mark recruit as ready
         set_recruit_status(member.id, "ready")
 
-        # создаём личные каналы
+        # Ensure recruit channels exist
         try:
             text_ch, voice_ch, is_new = await ensure_recruit_channels(guild, member)
         except Exception as e:
             print(f"[recruit channels ERROR] {type(e).__name__}: {e}", file=sys.stderr)
             await interaction.response.send_message(
-                "Recruit role assigned, but interview channels could not be created. "
-                "Please contact staff.",
+                t(lang, "recruit_channels_error"),
                 ephemeral=True,
             )
             return
 
         if not is_new:
             await interaction.response.send_message(
-                (
-                    f'Recruit role "{recruit_role.name}" assigned!\n'
-                    f'Your application status: **READY**.\n\n'
-                    f'Your interview channels already exist:\n'
-                    f'- Text: {text_ch.mention}\n'
-                    f'- Voice: {voice_ch.mention}'
+                t(lang, "recruit_channels_existing").format(
+                    role=recruit_role.name,
+                    text=text_ch.mention,
+                    voice=voice_ch.mention,
                 ),
                 ephemeral=True,
             )
             return
 
-        # обновим user
+        # Reload user to ensure fresh language preference
         user = get_or_create_user_from_member(member)
         lang = user.language or lang
 
-        # Стим-ссылка
+        # Build Steam URL if available
         if getattr(user, "steam_url", None):
             steam_url = user.steam_url
         elif user.steam_id:
@@ -459,13 +455,13 @@ class RegisterRecruitButton(discord.ui.Button):
         )
 
         embed.add_field(
-            name="Recruit code",
+            name=t(lang, "recruit_embed_field_code"),
             value=recruit_code,
             inline=False,
         )
 
         embed.add_field(
-            name="Discord",
+            name=t(lang, "recruit_embed_field_discord"),
             value=(
                 f"{member.mention}\n"
                 f"Display name: **{member.display_name}**\n"
@@ -477,32 +473,35 @@ class RegisterRecruitButton(discord.ui.Button):
 
         if steam_url:
             embed.add_field(
-                name="Steam",
+                name=t(lang, "recruit_embed_field_steam"),
                 value=f"ID: `{user.steam_id}`\n[Open profile]({steam_url})",
                 inline=False,
             )
         else:
             embed.add_field(
-                name="Steam",
-                value="Not linked",
+                name=t(lang, "recruit_embed_field_steam"),
+                value=t(lang, "recruit_embed_steam_not_linked"),
                 inline=False,
             )
 
-        lang_name = {"ru": "Русский", "en": "English"}.get(user.language, "English")
+        lang_name = {
+            "ru": t(lang, "language_name_ru"),
+            "en": t(lang, "language_name_en"),
+        }.get(user.language, t(lang, "language_name_en"))
 
         embed.add_field(
-            name="Language",
+            name=t(lang, "recruit_embed_field_language"),
             value=lang_name,
             inline=True,
         )
 
         embed.add_field(
-            name="Status",
+            name=t(lang, "recruit_embed_field_status"),
             value=t(lang, "recruit_embed_status_ready"),
             inline=True,
         )
 
-        embed.set_footer(text="Use this channel to schedule and run the interview.")
+        embed.set_footer(text=t(lang, "recruit_embed_footer_interview"))
 
         ping_role = member.guild.get_role(getattr(Config, "RECRUITER_ROLE_ID", 0))
         content = f"{member.mention} {ping_role.mention}" if ping_role else member.mention
@@ -521,34 +520,32 @@ class RegisterRecruitButton(discord.ui.Button):
             allowed_mentions=discord.AllowedMentions(users=True, roles=True),
         )
 
-        # чтобы потом можно было корректно задизейблить кнопки
+        # Store message ID to enable moderation callbacks later
         mod_view.message_id = msg.id
 
-        # ответ рекруту в DM-контексте
+        # Confirm to the recruit via DM interaction
         await interaction.response.send_message(
-            (
-                f'Recruit role "{recruit_role.name}" assigned!\n'
-                f'Your application status: **READY**.\n\n'
-                f'A private interview text & voice channel have been created for you:\n'
-                f'- Text: {text_ch.mention}\n'
-                f'- Voice: {voice_ch.mention}'
+            t(lang, "recruit_channels_created").format(
+                role=recruit_role.name,
+                text=text_ch.mention,
+                voice=voice_ch.mention,
             ),
             ephemeral=True,
         )
 
 
-# ------------ ВЫБОР ЯЗЫКА ------------
+# ------------ Language choice ------------
 
 
 class LanguageSelectView(discord.ui.View):
-    """Первый шаг: выбор языка."""
+    """Language selector view shown in onboarding DMs."""
 
     def __init__(self, bot_client: commands.Bot, guild_id: int):
         super().__init__(timeout=900)
         self.bot = bot_client
         self.guild_id = guild_id
-        self.add_item(LanguageButton("en", "English"))
-        self.add_item(LanguageButton("ru", "Русский"))
+        self.add_item(LanguageButton("en", t("en", "language_name_en")))
+        self.add_item(LanguageButton("ru", t("ru", "language_name_ru")))
 
 
 class LanguageButton(discord.ui.Button):
@@ -584,14 +581,14 @@ class LanguageButton(discord.ui.Button):
 
 
 async def send_main_menu_dm(bot: commands.Bot, member: discord.Member, lang: str):
-    """Отправить главное onboarding-сообщение с тремя кнопками."""
+    """Send the main onboarding menu with action buttons."""
     embed = _build_onboarding_embed(member, lang)
     view = OnboardingMainView(bot=bot, guild_id=member.guild.id, lang=lang)
     await member.send(embed=embed, view=view)
 
 
 async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
-    """Первое ЛС: выбор языка."""
+    """Send the onboarding language selection DM to a member."""
     if member.bot or member.guild is None:
         return True
 
@@ -614,10 +611,13 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
 
 
 async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
-    """Если ЛС закрыты — пишем в fallback-канал."""
+    """Notify in fallback channel when the user's DMs are closed."""
     chan_id = getattr(Config, "FALLBACK_CHANNEL_ID", 0)
     if not chan_id:
         return
+
+    user = get_or_create_user(member.id)
+    lang = user.language or getattr(Config, "DEFAULT_LANG", "en")
 
     channel = bot.get_channel(chan_id)
     if channel is None:
@@ -628,6 +628,8 @@ async def notify_dm_disabled(bot: commands.Bot, member: discord.Member):
             return
 
     await channel.send(
-        f"{member.mention}, enable direct messages so I can send your onboarding instructions. "
-        f"After this, please send the `!onboarding` command on the server."
+        t(lang, "notify_dm_disabled").format(
+            member=member.mention,
+            command="!onboarding",
+        )
     )

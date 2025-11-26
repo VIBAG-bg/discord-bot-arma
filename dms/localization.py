@@ -19,6 +19,8 @@ LANGS = {
         ),
         "language_set": "Language set: EN",
         "choose_language": "Choose your language:",
+        "language_name_en": "English",
+        "language_name_ru": "Russian",
         "onboarding_guild_only": "This command must be used in a server channel, not in DMs.",
         "onboarding_dm_sent_self": "Onboarding DM has been sent to you.",
         "onboarding_dm_failed_self": (
@@ -38,6 +40,7 @@ LANGS = {
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
         "ping_title": "Pong!",
         "ping_description": "Bot latency: **{latency}ms**",
+        "role_default_label": "Role",
         "info_title": "Bot Information",
         "info_description": "ARMA 3 Community Discord Bot",
         "info_field_bot": "Bot",
@@ -72,8 +75,33 @@ LANGS = {
         "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
         "avatar_no_custom": "This user has no custom avatar.",
         "say_nothing_to_send": "Nothing to send.",
+        "recruit_channels_error": (
+            "Recruit role assigned, but interview channels could not be created. "
+            "Please contact staff."
+        ),
+        "recruit_channels_existing": (
+            'Recruit role "{role}" assigned!\n'
+            "Your application status: **READY**.\n\n"
+            "Your interview channels already exist:\n"
+            "- Text: {text}\n"
+            "- Voice: {voice}"
+        ),
+        "recruit_channels_created": (
+            'Recruit role "{role}" assigned!\n'
+            "Your application status: **READY**.\n\n"
+            "A private interview text & voice channel have been created for you:\n"
+            "- Text: {text}\n"
+            "- Voice: {voice}"
+        ),
         "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+        "recruit_embed_field_code": "Recruit code",
+        "recruit_embed_field_discord": "Discord",
+        "recruit_embed_field_steam": "Steam",
+        "recruit_embed_steam_not_linked": "Not linked",
+        "recruit_embed_field_language": "Language",
+        "recruit_embed_field_status": "Status",
+        "recruit_embed_footer_interview": "Use this channel to schedule and run the interview.",
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -147,6 +175,10 @@ LANGS = {
         "arma_role_not_found": "This ARMA role is not configured or no longer exists.",
         "arma_role_added": "ARMA role **{role}** has been assigned.",
         "arma_role_removed": "ARMA role **{role}** has been removed.",
+        "notify_dm_disabled": (
+            "{member}, enable direct messages so I can send your onboarding instructions. "
+            "After this, please send the `{command}` command on the server."
+        ),
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -166,6 +198,8 @@ LANGS = {
         ),
         "language_set": "Язык установлен: RU",
         "choose_language": "Выберите язык:",
+        "language_name_en": "Английский",
+        "language_name_ru": "Русский",
         "onboarding_guild_only": "Эту команду нужно использовать в канале сервера, а не в личных сообщениях.",
         "onboarding_dm_sent_self": "Онбординг-сообщение отправлено вам в личку.",
         "onboarding_dm_failed_self": (
@@ -185,6 +219,7 @@ LANGS = {
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
         "ping_title": "Понг!",
         "ping_description": "Задержка бота: **{latency} мс**",
+        "role_default_label": "Роль",
         "info_title": "Информация о боте",
         "info_description": "Discord-бот сообщества ARMA 3",
         "info_field_bot": "Бот",
@@ -219,8 +254,33 @@ LANGS = {
         "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
         "avatar_no_custom": "У этого пользователя нет собственного аватара.",
         "say_nothing_to_send": "Нет текста для отправки.",
+        "recruit_channels_error": (
+            "Роль рекрута выдана, но не удалось создать каналы для собеседования. "
+            "Свяжитесь с персоналом."
+        ),
+        "recruit_channels_existing": (
+            "Роль рекрута \"{role}\" выдана!\n"
+            "Статус заявки: **READY**.\n\n"
+            "Каналы для собеседования уже существуют:\n"
+            "- Текст: {text}\n"
+            "- Голос: {voice}"
+        ),
+        "recruit_channels_created": (
+            "Роль рекрута \"{role}\" выдана!\n"
+            "Статус заявки: **READY**.\n\n"
+            "Для вас созданы приватные текстовый и голосовой каналы:\n"
+            "- Текст: {text}\n"
+            "- Голос: {voice}"
+        ),
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
+        "recruit_embed_field_code": "Код рекрута",
+        "recruit_embed_field_discord": "Discord",
+        "recruit_embed_field_steam": "Steam",
+        "recruit_embed_steam_not_linked": "Не привязан",
+        "recruit_embed_field_language": "Язык",
+        "recruit_embed_field_status": "Статус",
+        "recruit_embed_footer_interview": "Используйте этот канал, чтобы назначить и провести собеседование.",
         "recruit_already_applied": (
             "Ты уже подал заявку как рекрут. "
             "Если что-то не так, напиши рекрутёрам или модераторам."
@@ -294,6 +354,10 @@ LANGS = {
         "arma_role_not_found": "Эта роль для АРМА-операций не настроена или была удалена.",
         "arma_role_added": "Роль для АРМА-операций **{role}** выдана.",
         "arma_role_removed": "Роль для АРМА-операций **{role}** снята.",
+        "notify_dm_disabled": (
+            "{member}, включите личные сообщения, чтобы я мог отправить инструкции по онбордингу. "
+            "После этого отправьте команду `{command}` на сервере."
+        ),
     },
 }
 
