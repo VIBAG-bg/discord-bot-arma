@@ -99,9 +99,27 @@ LANGS = {
         "recruit_embed_field_discord": "Discord",
         "recruit_embed_field_steam": "Steam",
         "recruit_embed_steam_not_linked": "Not linked",
+        "recruit_embed_steam_not_linked_bilingual": "Not linked / Не привязан",
         "recruit_embed_field_language": "Language",
         "recruit_embed_field_status": "Status",
         "recruit_embed_footer_interview": "Use this channel to schedule and run the interview.",
+        "recruit_info_title": "Recruit info",
+        "recruit_field_text_channel": "Text channel",
+        "recruit_field_voice_channel": "Voice channel",
+        "value_unknown": "Unknown",
+        "recruits_unknown_status": "Unknown status. Use: pending / ready / done / rejected.",
+        "recruits_none_with_status": "No recruits with status **{status}**.",
+        "recruits_with_status_title": "Recruits with status {status}",
+        "recruits_overview_title": "Recruits overview",
+        "recruits_overview_none": "_none_",
+        "user_not_in_guild": "User is not a member of this guild.",
+        "user_synced": (
+            "User `{target}` synced.\n"
+            "discord_id={discord_id}, username=`{username}`, "
+            "display_name=`{display_name}`, is_admin={is_admin}"
+        ),
+        "command_guild_only": "This command can only be used in a guild.",
+        "user_updates_done": "Updated {updated} users from guild `{guild}`.",
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -358,6 +376,24 @@ LANGS = {
             "{member}, включите личные сообщения, чтобы я мог отправить инструкции по онбордингу. "
             "После этого отправьте команду `{command}` на сервере."
         ),
+        "recruit_info_title": "Информация о рекруте",
+        "recruit_field_text_channel": "Текстовый канал",
+        "recruit_field_voice_channel": "Голосовой канал",
+        "value_unknown": "Неизвестно",
+        "recruits_unknown_status": "Неизвестный статус. Используйте: pending / ready / done / rejected.",
+        "recruits_none_with_status": "Нет рекрутов со статусом **{status}**.",
+        "recruits_with_status_title": "Рекруты со статусом {status}",
+        "recruits_overview_title": "Сводка по рекрутам",
+        "recruits_overview_none": "_нет_",
+        "user_not_in_guild": "Пользователь не является участником этого сервера.",
+        "user_synced": (
+            "Пользователь `{target}` синхронизирован.\n"
+            "discord_id={discord_id}, username=`{username}`, "
+            "display_name=`{display_name}`, is_admin={is_admin}"
+        ),
+        "command_guild_only": "Эту команду можно использовать только на сервере.",
+        "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
+        "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
     },
 }
 

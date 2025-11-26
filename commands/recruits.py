@@ -11,12 +11,13 @@ from database.service import (
     get_recruit_code,
 )
 from database.models import User
+from dms.localization import t
 
 STATUSES = ["pending", "ready", "done", "rejected"]
 
 
 class RecruitCommands(commands.Cog):
-    """Команды для работы с рекрутами и синхронизации пользователей."""
+    """Commands for recruit-related information and synchronization."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -26,30 +27,28 @@ class RecruitCommands(commands.Cog):
     @commands.command(name="recruit")
     async def recruit(self, ctx: commands.Context, member: discord.Member | None = None):
         """
-        Показать подробную информацию о рекруте.
-        Без аргументов — про тебя, с аргументом — про указанного пользователя.
+        Show recruit profile details for yourself or a specified member.
 
-        Примеры:
+        Examples:
           !recruit
           !recruit @User
         """
         target = member or ctx.author
 
-        # На случай если это не Member (хотя в гильдии обычно Member)
+        # Ensure target is a Member object if a partial user was provided
         if not isinstance(target, discord.Member):
             guild = ctx.guild
             if guild is not None:
                 try:
                     target = await guild.fetch_member(target.id)  # type: ignore
                 except discord.DiscordException:
-                    await ctx.send("User is not a member of this guild.")
+                    await ctx.send(t("en", "user_not_in_guild"))
                     return
 
         user = get_or_create_user_from_member(target)
         lang = user.language or "en"
         status = (user.recruit_status or "pending").lower()
 
-        # Стим-ссылка
         if user.steam_url:
             steam_url = user.steam_url
         elif user.steam_id:
@@ -57,33 +56,32 @@ class RecruitCommands(commands.Cog):
         else:
             steam_url = None
 
-        # Каналы
         text_mention = (
             f"<#{user.recruit_text_channel_id}>"
             if user.recruit_text_channel_id
-            else "—"
+            else t(lang, "value_unknown")
         )
         voice_mention = (
             f"<#{user.recruit_voice_channel_id}>"
             if user.recruit_voice_channel_id
-            else "—"
+            else t(lang, "value_unknown")
         )
 
         recruit_code = get_recruit_code(user)
 
         embed = discord.Embed(
-            title="Recruit info / Информация о рекруте",
+            title=t(lang, "recruit_info_title"),
             color=discord.Color.gold(),
         )
 
         embed.add_field(
-            name="Recruit code",
+            name=t(lang, "recruit_embed_field_code"),
             value=recruit_code,
             inline=False,
         )
 
         embed.add_field(
-            name="Discord",
+            name=t(lang, "recruit_embed_field_discord"),
             value=(
                 f"{target.mention}\n"
                 f"Display name: **{target.display_name}**\n"
@@ -93,31 +91,42 @@ class RecruitCommands(commands.Cog):
             inline=False,
         )
 
-        lang_name = {"ru": "Русский", "en": "English"}.get(user.language, "English")
+        lang_name = {
+            "ru": t(lang, "language_name_ru"),
+            "en": t(lang, "language_name_en"),
+        }.get(user.language, t(lang, "language_name_en"))
 
-        embed.add_field(name="Status", value=status.upper(), inline=True)
-        embed.add_field(name="Language", value=lang_name, inline=True)
+        embed.add_field(
+            name=t(lang, "recruit_embed_field_status"),
+            value=status.upper(),
+            inline=True,
+        )
+        embed.add_field(
+            name=t(lang, "recruit_embed_field_language"),
+            value=lang_name,
+            inline=True,
+        )
 
         if steam_url:
             embed.add_field(
-                name="Steam",
+                name=t(lang, "recruit_embed_field_steam"),
                 value=f"ID: `{user.steam_id}`\n[Open profile]({steam_url})",
                 inline=False,
             )
         else:
             embed.add_field(
-                name="Steam",
-                value="Not linked / Не привязан",
+                name=t(lang, "recruit_embed_field_steam"),
+                value=t(lang, "recruit_embed_steam_not_linked_bilingual"),
                 inline=False,
             )
 
         embed.add_field(
-            name="Text channel",
+            name=t(lang, "recruit_field_text_channel"),
             value=text_mention,
             inline=True,
         )
         embed.add_field(
-            name="Voice channel",
+            name=t(lang, "recruit_field_voice_channel"),
             value=voice_mention,
             inline=True,
         )
@@ -130,24 +139,27 @@ class RecruitCommands(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def recruits(self, ctx: commands.Context, status: str | None = None):
         """
-        Краткий обзор рекрутов.
+        List recruits with an optional status filter.
 
-        Без аргумента — сводка по всем статусам.
-        С аргументом (pending/ready/done/rejected) — только этот статус.
+        Without a status, lists all recruits grouped by status.
+        With a status (pending/ready/done/rejected), shows recruits in that status.
 
-        Примеры:
+        Examples:
           !recruits
           !recruits ready
         """
+        default_lang = "en"
         if status:
             status = status.lower()
             if status not in STATUSES:
-                await ctx.send("Unknown status. Use: pending / ready / done / rejected.")
+                await ctx.send(t(default_lang, "recruits_unknown_status"))
                 return
 
             users = get_recruits_by_status(status)
             if not users:
-                await ctx.send(f"No recruits with status **{status}**.")
+                await ctx.send(
+                    t(default_lang, "recruits_none_with_status").format(status=status)
+                )
                 return
 
             lines: list[str] = []
@@ -158,23 +170,24 @@ class RecruitCommands(commands.Cog):
                 lines.append(line)
 
             embed = discord.Embed(
-                title=f"Recruits with status {status.upper()}",
+                title=t(default_lang, "recruits_with_status_title").format(
+                    status=status.upper()
+                ),
                 description="\n".join(lines),
                 color=discord.Color.blurple(),
             )
             await ctx.send(embed=embed)
             return
 
-        # Без статуса — сводка по всем
         embed = discord.Embed(
-            title="Recruits overview",
+            title=t(default_lang, "recruits_overview_title"),
             color=discord.Color.blurple(),
         )
 
         for st in STATUSES:
             users = get_recruits_by_status(st)
             if not users:
-                value = "_none_"
+                value = t(default_lang, "recruits_overview_none")
             else:
                 value_lines = [f"<@{u.discord_id}>" for u in users]
                 value = "\n".join(value_lines)
@@ -193,10 +206,9 @@ class RecruitCommands(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def user_update(self, ctx: commands.Context, member: discord.Member | None = None):
         """
-        Обновить одну запись пользователя в БД из текущих данных Discord.
-        Если пользователя нет — будет создан.
+        Synchronize a user's profile fields with Discord data.
 
-        Примеры:
+        Examples:
           !user_update
           !user_update @User
         """
@@ -208,15 +220,19 @@ class RecruitCommands(commands.Cog):
                 try:
                     target = await guild.fetch_member(target.id)  # type: ignore
                 except discord.DiscordException:
-                    await ctx.send("User is not a member of this guild.")
+                    await ctx.send(t("en", "user_not_in_guild"))
                     return
 
         user = get_or_create_user_from_member(target)
 
         await ctx.send(
-            f"User `{target}` synced.\n"
-            f"discord_id={user.discord_id}, username=`{user.username}`, "
-            f"display_name=`{user.display_name}`, is_admin={user.is_admin}"
+            t("en", "user_synced").format(
+                target=target,
+                discord_id=user.discord_id,
+                username=user.username,
+                display_name=user.display_name,
+                is_admin=user.is_admin,
+            )
         )
 
     # ========= !user_updates =========
@@ -225,12 +241,13 @@ class RecruitCommands(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def user_updates(self, ctx: commands.Context):
         """
-        Массовый апдейт всех пользователей сервера в БД.
-        Проходит по всем участникам гильдии и синхронизирует профиль.
+        Bulk refresh user profiles for the current guild.
+
+        Updates every non-bot member so stored data matches Discord state.
         """
         guild = ctx.guild
         if guild is None:
-            await ctx.send("This command can only be used in a guild.")
+            await ctx.send(t("en", "command_guild_only"))
             return
 
         updated = 0
@@ -240,7 +257,7 @@ class RecruitCommands(commands.Cog):
             get_or_create_user_from_member(member)
             updated += 1
 
-        await ctx.send(f"Updated {updated} users from guild `{guild.name}`.")
+        await ctx.send(t("en", "user_updates_done").format(updated=updated, guild=guild.name))
 
 
 async def setup(bot: commands.Bot):
