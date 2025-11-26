@@ -5,6 +5,27 @@ from dms.localization import t
 
 
 class EmbedHelpCommand(commands.MinimalHelpCommand):
+    DESCRIPTION_KEYS: dict[str, str] = {
+        "ping": "help_desc_ping",
+        "info": "help_desc_info",
+        "serverinfo": "help_desc_serverinfo",
+        "userinfo": "help_desc_userinfo",
+        "avatar": "help_desc_avatar",
+        "say": "help_desc_say",
+        "onboarding": "help_desc_onboarding",
+        "onboarding_for": "help_desc_onboarding_for",
+        "recruit": "help_desc_recruit",
+        "recruits": "help_desc_recruits",
+        "user_update": "help_desc_user_update",
+        "user_updates": "help_desc_user_updates",
+        "role_panel": "help_desc_role_panel",
+        "kick": "help_desc_kick",
+        "ban": "help_desc_ban",
+        "unban": "help_desc_unban",
+        "clear": "help_desc_clear",
+        "mute": "help_desc_mute",
+        "unmute": "help_desc_unmute",
+    }
     """
     Custom help command that:
     - formats command list into embeds,
@@ -26,6 +47,15 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         prefix = self._get_prefix()
         usage = command.usage or command.signature
         return f"{prefix}{command.qualified_name} {usage}".strip()
+
+    def _get_command_description(self, command: commands.Command, lang: str) -> str:
+        """Return a localized description for a command with fallback to its own help."""
+        key = self.DESCRIPTION_KEYS.get(command.qualified_name)
+        if key:
+            text = t(lang, key)
+            if text and text != key:
+                return text
+        return command.help or command.short_doc or t(lang, "no_description")
 
     async def send_bot_help(self, mapping):
         """
@@ -65,7 +95,7 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
                 lines.append(
                     t(lang, "help_command_line").format(
                         signature=sig,
-                        description=command.short_doc or t(lang, "no_description"),
+                        description=self._get_command_description(command, lang),
                     )
                 )
 
@@ -95,7 +125,7 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
                 value_lines.append(
                     t(lang, "help_command_line").format(
                         signature=sig,
-                        description=command.short_doc or t(lang, "no_description"),
+                        description=self._get_command_description(command, lang),
                     )
                 )
 
@@ -119,7 +149,7 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
             lang = user.language or "en"
         embed = discord.Embed(
             title=t(lang, "help_command_title").format(signature=sig),
-            description=command.help or command.short_doc or t(lang, "no_description"),
+            description=self._get_command_description(command, lang),
         )
 
         destination = self.get_destination()
@@ -145,7 +175,7 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
             sig = self.get_command_signature(command)
             embed.add_field(
                 name=sig,
-                value=command.short_doc or t(lang, "no_description"),
+                value=self._get_command_description(command, lang),
                 inline=False,
             )
 

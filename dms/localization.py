@@ -1,4 +1,4 @@
-# dms/localization.py
+﻿# dms/localization.py
 
 LANGS = {
     "en": {
@@ -41,6 +41,7 @@ LANGS = {
         "ping_title": "Pong!",
         "ping_description": "Bot latency: **{latency}ms**",
         "role_default_label": "Role",
+        "role_with_description": "{mention} - {desc}",
         "info_title": "Bot Information",
         "info_description": "ARMA 3 Community Discord Bot",
         "info_field_bot": "Bot",
@@ -131,6 +132,25 @@ LANGS = {
         "help_command_title": "Command: {signature}",
         "help_category_title": "Category: {name}",
         "no_description": "No description.",
+        "help_desc_ping": "Check the bot's latency.",
+        "help_desc_info": "Show information about the bot.",
+        "help_desc_serverinfo": "Show information about the current server.",
+        "help_desc_userinfo": "Show information about a user.",
+        "help_desc_avatar": "Show a user's avatar.",
+        "help_desc_say": "Send a message (optionally as an embed) to a channel.",
+        "help_desc_onboarding": "Resend onboarding DM to yourself.",
+        "help_desc_onboarding_for": "Send onboarding DM to a specific member.",
+        "help_desc_recruit": "Show recruit profile details.",
+        "help_desc_recruits": "List recruits, optionally filtered by status.",
+        "help_desc_user_update": "Synchronize a user's profile from Discord.",
+        "help_desc_user_updates": "Bulk synchronize all non-bot members.",
+        "help_desc_role_panel": "Post the roles selection panel with buttons.",
+        "help_desc_kick": "Kick a member from the server.",
+        "help_desc_ban": "Ban a member from the server.",
+        "help_desc_unban": "Unban a user by ID.",
+        "help_desc_clear": "Delete multiple recent messages.",
+        "help_desc_mute": "Timeout (mute) a member for a duration.",
+        "help_desc_unmute": "Remove timeout from a member.",
         "mod_cannot_target_self_kick": "🚫 You cannot kick yourself!",
         "mod_cannot_target_self_ban": "🚫 You cannot ban yourself!",
         "mod_cannot_target_self_mute": "🚫 You cannot mute yourself!",
@@ -436,17 +456,36 @@ LANGS = {
         ),
         "command_guild_only": "Эту команду можно использовать только на сервере.",
         "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
-        "help_title": "Справка • ARMA 3 Bot",
+        "help_title": "Help • ARMA 3 Bot",
         "help_description": (
             "Доступные команды по категориям.\n"
             "Используйте `{prefix}help <command>`, чтобы увидеть подробности."
         ),
-        "help_admin_commands": "🔒 Команды администраторов",
+        "help_admin_commands": "🔒 Admin commands",
         "help_general_category": "Общие",
         "help_command_line": "`{signature}` — {description}",
         "help_command_title": "Команда: {signature}",
         "help_category_title": "Категория: {name}",
         "no_description": "Описание отсутствует.",
+        "help_desc_ping": "Проверить задержку бота.",
+        "help_desc_info": "Показать информацию о боте.",
+        "help_desc_serverinfo": "Показать информацию о текущем сервере.",
+        "help_desc_userinfo": "Показать информацию о пользователе.",
+        "help_desc_avatar": "Показать аватар пользователя.",
+        "help_desc_say": "Отправить сообщение (при желании в embed) в канал.",
+        "help_desc_onboarding": "Выслать онбординг-сообщение себе в личку.",
+        "help_desc_onboarding_for": "Отправить онбординг-сообщение выбранному участнику.",
+        "help_desc_recruit": "Показать данные анкеты рекрута.",
+        "help_desc_recruits": "Список рекрутов с необязательным фильтром по статусу.",
+        "help_desc_user_update": "Синхронизировать профиль пользователя из Discord.",
+        "help_desc_user_updates": "Массово синхронизировать всех участников (кроме ботов).",
+        "help_desc_role_panel": "Опубликовать панель выбора ролей с кнопками.",
+        "help_desc_kick": "Кикнуть участника с сервера.",
+        "help_desc_ban": "Забанить участника на сервере.",
+        "help_desc_unban": "Разбанить пользователя по ID.",
+        "help_desc_clear": "Удалить несколько последних сообщений.",
+        "help_desc_mute": "Выдать тайм-аут (мьют) участнику на время.",
+        "help_desc_unmute": "Снять тайм-аут с участника.",
         "mod_cannot_target_self_kick": "🚫 Нельзя кикнуть себя.",
         "mod_cannot_target_self_ban": "🚫 Нельзя забанить себя.",
         "mod_cannot_target_self_mute": "🚫 Нельзя замьютить себя.",
@@ -488,3 +527,6 @@ def t(lang: str, key: str) -> str:
     """Simple translation helper."""
     data = LANGS.get(lang) or LANGS["en"]
     return data.get(key) or LANGS["en"].get(key, key)
+
+
+
