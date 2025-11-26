@@ -1,11 +1,7 @@
-"""
-Moderation commands cog.
-Contains commands for server moderation like kick, ban, etc.
-"""
-
 import discord
 from discord.ext import commands
 from typing import Optional
+from dms.localization import t
 
 
 class Moderation(commands.Cog):
@@ -26,35 +22,36 @@ class Moderation(commands.Cog):
         
         Requires: Kick Members permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         if member == ctx.author:
-            await ctx.send("❌ You cannot kick yourself!")
+            await ctx.send(t(lang, "mod_cannot_target_self_kick"))
             return
         
         if member.top_role >= ctx.author.top_role:
-            await ctx.send("❌ You cannot kick someone with a higher or equal role!")
+            await ctx.send(t(lang, "mod_cannot_target_higher"))
             return
         
         if member.top_role >= ctx.guild.me.top_role:
-            await ctx.send("❌ I cannot kick someone with a higher or equal role than me!")
+            await ctx.send(t(lang, "mod_bot_cannot_target_higher"))
             return
         
         try:
             await member.kick(reason=reason)
             
             embed = discord.Embed(
-                title="✅ Member Kicked",
+                title=t(lang, "mod_kick_title"),
                 color=discord.Color.orange(),
-                description=f"{member.mention} has been kicked from the server."
+                description=t(lang, "mod_kick_description").format(member=member.mention)
             )
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
-            embed.set_footer(text=f"User ID: {member.id}")
+            embed.add_field(name=t(lang, "mod_reason"), value=reason, inline=False)
+            embed.add_field(name=t(lang, "mod_moderator"), value=ctx.author.mention, inline=True)
+            embed.set_footer(text=t(lang, "mod_user_id").format(user_id=member.id))
             
             await ctx.send(embed=embed)
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to kick this member.")
+            await ctx.send(t(lang, "mod_no_permission_kick"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
     
     @commands.command(name='ban')
     @commands.has_permissions(ban_members=True)
@@ -68,35 +65,36 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         if member == ctx.author:
-            await ctx.send("❌ You cannot ban yourself!")
+            await ctx.send(t(lang, "mod_cannot_target_self_ban"))
             return
         
         if member.top_role >= ctx.author.top_role:
-            await ctx.send("❌ You cannot ban someone with a higher or equal role!")
+            await ctx.send(t(lang, "mod_cannot_target_higher"))
             return
         
         if member.top_role >= ctx.guild.me.top_role:
-            await ctx.send("❌ I cannot ban someone with a higher or equal role than me!")
+            await ctx.send(t(lang, "mod_bot_cannot_target_higher"))
             return
         
         try:
             await member.ban(reason=reason, delete_message_days=1)
             
             embed = discord.Embed(
-                title="🔨 Member Banned",
+                title=t(lang, "mod_ban_title"),
                 color=discord.Color.red(),
-                description=f"{member.mention} has been banned from the server."
+                description=t(lang, "mod_ban_description").format(member=member.mention)
             )
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
-            embed.set_footer(text=f"User ID: {member.id}")
+            embed.add_field(name=t(lang, "mod_reason"), value=reason, inline=False)
+            embed.add_field(name=t(lang, "mod_moderator"), value=ctx.author.mention, inline=True)
+            embed.set_footer(text=t(lang, "mod_user_id").format(user_id=member.id))
             
             await ctx.send(embed=embed)
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to ban this member.")
+            await ctx.send(t(lang, "mod_no_permission_ban"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
     
     @commands.command(name='unban')
     @commands.has_permissions(ban_members=True)
@@ -110,26 +108,27 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         try:
             user = await self.bot.fetch_user(user_id)
             await ctx.guild.unban(user, reason=reason)
             
             embed = discord.Embed(
-                title="✅ User Unbanned",
+                title=t(lang, "mod_unban_title"),
                 color=discord.Color.green(),
-                description=f"{user.mention} ({user.name}) has been unbanned."
+                description=t(lang, "mod_unban_description").format(user=user.mention, name=user.name)
             )
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
-            embed.set_footer(text=f"User ID: {user_id}")
+            embed.add_field(name=t(lang, "mod_reason"), value=reason, inline=False)
+            embed.add_field(name=t(lang, "mod_moderator"), value=ctx.author.mention, inline=True)
+            embed.set_footer(text=t(lang, "mod_user_id").format(user_id=user_id))
             
             await ctx.send(embed=embed)
         except discord.NotFound:
-            await ctx.send("❌ User not found or not banned.")
+            await ctx.send(t(lang, "mod_user_not_found_or_not_banned"))
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to unban users.")
+            await ctx.send(t(lang, "mod_no_permission_unban"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
     
     @commands.command(name='clear', aliases=['purge', 'delete'])
     @commands.has_permissions(manage_messages=True)
@@ -145,12 +144,13 @@ class Moderation(commands.Cog):
         Maximum: 100 messages
         Requires: Manage Messages permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         if amount < 1:
-            await ctx.send("❌ Amount must be at least 1.")
+            await ctx.send(t(lang, "mod_clear_amount_min"))
             return
         
         if amount > 100:
-            await ctx.send("❌ Amount cannot exceed 100 messages.")
+            await ctx.send(t(lang, "mod_clear_amount_max"))
             return
         
         try:
@@ -158,12 +158,12 @@ class Moderation(commands.Cog):
             deleted = await ctx.channel.purge(limit=amount + 1)
             
             # Send confirmation message that will auto-delete
-            msg = await ctx.send(f"✅ Deleted {len(deleted) - 1} message(s).")
+            msg = await ctx.send(t(lang, "mod_clear_deleted").format(count=len(deleted) - 1))
             await msg.delete(delay=5)
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to delete messages.")
+            await ctx.send(t(lang, "mod_no_permission_clear"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
     
     @commands.command(name='mute')
     @commands.has_permissions(moderate_members=True)
@@ -178,16 +178,17 @@ class Moderation(commands.Cog):
         Default duration: 60 minutes
         Requires: Moderate Members permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         if member == ctx.author:
-            await ctx.send("❌ You cannot mute yourself!")
+            await ctx.send(t(lang, "mod_cannot_target_self_mute"))
             return
         
         if member.top_role >= ctx.author.top_role:
-            await ctx.send("❌ You cannot mute someone with a higher or equal role!")
+            await ctx.send(t(lang, "mod_cannot_target_higher"))
             return
         
         if duration < 1 or duration > 40320:  # Max 28 days (40320 minutes)
-            await ctx.send("❌ Duration must be between 1 and 40320 minutes (28 days).")
+            await ctx.send(t(lang, "mod_mute_duration_invalid"))
             return
         
         try:
@@ -196,20 +197,24 @@ class Moderation(commands.Cog):
             await member.timeout(timeout_until, reason=reason)
             
             embed = discord.Embed(
-                title="🔇 Member Muted",
+                title=t(lang, "mod_mute_title"),
                 color=discord.Color.orange(),
-                description=f"{member.mention} has been muted."
+                description=t(lang, "mod_mute_description").format(member=member.mention)
             )
-            embed.add_field(name="Duration", value=f"{duration} minutes", inline=True)
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
-            embed.set_footer(text=f"User ID: {member.id}")
+            embed.add_field(
+                name=t(lang, "mod_duration"),
+                value=t(lang, "mod_duration_minutes").format(minutes=duration),
+                inline=True,
+            )
+            embed.add_field(name=t(lang, "mod_reason"), value=reason, inline=False)
+            embed.add_field(name=t(lang, "mod_moderator"), value=ctx.author.mention, inline=True)
+            embed.set_footer(text=t(lang, "mod_user_id").format(user_id=member.id))
             
             await ctx.send(embed=embed)
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to timeout this member.")
+            await ctx.send(t(lang, "mod_no_permission_mute"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
     
     @commands.command(name='unmute')
     @commands.has_permissions(moderate_members=True)
@@ -223,23 +228,24 @@ class Moderation(commands.Cog):
         
         Requires: Moderate Members permission
         """
+        lang = getattr(ctx, "language", None) or "en"
         try:
             await member.timeout(None, reason=reason)
             
             embed = discord.Embed(
-                title="🔊 Member Unmuted",
+                title=t(lang, "mod_unmute_title"),
                 color=discord.Color.green(),
-                description=f"{member.mention} has been unmuted."
+                description=t(lang, "mod_unmute_description").format(member=member.mention)
             )
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
-            embed.set_footer(text=f"User ID: {member.id}")
+            embed.add_field(name=t(lang, "mod_reason"), value=reason, inline=False)
+            embed.add_field(name=t(lang, "mod_moderator"), value=ctx.author.mention, inline=True)
+            embed.set_footer(text=t(lang, "mod_user_id").format(user_id=member.id))
             
             await ctx.send(embed=embed)
         except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to remove timeout from this member.")
+            await ctx.send(t(lang, "mod_no_permission_unmute"))
         except Exception as e:
-            await ctx.send(f"❌ An error occurred: {e}")
+            await ctx.send(t(lang, "mod_error_generic").format(error=e))
 
 
 async def setup(bot):
