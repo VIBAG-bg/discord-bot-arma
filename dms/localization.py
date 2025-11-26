@@ -162,6 +162,7 @@ LANGS = {
         "mod_duration_minutes": "{minutes} minutes",
         "mod_error_generic": "🚫 An error occurred: {error}",
         "mod_user_not_found_or_not_banned": "🚫 User not found or not banned.",
+        "role_with_description": "{mention} - {desc}",
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -478,6 +479,7 @@ LANGS = {
         "mod_error_generic": "🚫 Произошла ошибка: {error}",
         "mod_user_not_found_or_not_banned": "🚫 Пользователь не найден или не забанен.",
         "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
+        "role_with_description": "{mention} - {desc}",
     },
 }
 
