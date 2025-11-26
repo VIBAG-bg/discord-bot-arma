@@ -19,6 +19,13 @@ LANGS = {
         ),
         "language_set": "Language set: EN",
         "choose_language": "Choose your language:",
+        "onboarding_guild_only": "This command must be used in a server channel, not in DMs.",
+        "onboarding_dm_sent_self": "Onboarding DM has been sent to you.",
+        "onboarding_dm_failed_self": (
+            "I couldn't send you a DM. Please enable DMs from server members and try again."
+        ),
+        "onboarding_dm_sent_other": "Onboarding DM has been sent to {member}.",
+        "onboarding_dm_failed_other": "I couldn't DM {member}. Their DMs may still be disabled.",
         "steam_link": (
             "⚠️ You must link your Steam ID before applying as a recruit.\n\n"
             "Use the button below and enter your 17-digit SteamID64."
@@ -159,6 +166,13 @@ LANGS = {
         ),
         "language_set": "Язык установлен: RU",
         "choose_language": "Выберите язык:",
+        "onboarding_guild_only": "Эту команду нужно использовать в канале сервера, а не в личных сообщениях.",
+        "onboarding_dm_sent_self": "Онбординг-сообщение отправлено вам в личку.",
+        "onboarding_dm_failed_self": (
+            "Не удалось отправить вам личное сообщение. Включите ЛС от участников сервера и попробуйте снова."
+        ),
+        "onboarding_dm_sent_other": "Онбординг-сообщение отправлено {member}.",
+        "onboarding_dm_failed_other": "Не удалось написать {member} в личные сообщения. Их ЛС, возможно, отключены.",
         "steam_link": (
             "⚠️ Перед тем как подать заявку рекрута, нужно привязать Steam ID.\n\n"
             "Используй кнопку ниже и введи свой 17-значный SteamID64."

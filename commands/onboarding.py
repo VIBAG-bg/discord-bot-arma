@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+from database.service import get_or_create_user_from_member
+from dms.localization import t
 from dms.onboarding_flow import send_onboarding_dm
 
 
@@ -8,6 +10,13 @@ class Onboarding(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    def _get_lang(self, member: discord.Member | discord.User) -> str:
+        """Return the preferred language for the member or default to English."""
+        if isinstance(member, discord.Member):
+            user = get_or_create_user_from_member(member)
+            return user.language or "en"
+        return "en"
 
     @commands.command(
         name="onboarding",
@@ -19,9 +28,10 @@ class Onboarding(commands.Cog):
         Resend onboarding DM to the command author.
         Use in a server text channel.
         """
+        lang = self._get_lang(ctx.author)
         if ctx.guild is None:
             await ctx.reply(
-                "This command must be used in a server channel, not in DMs.",
+                t(lang, "onboarding_guild_only"),
                 mention_author=False,
             )
             return
@@ -31,31 +41,31 @@ class Onboarding(commands.Cog):
 
         if sent:
             await ctx.reply(
-                "Onboarding DM has been sent to you.",
+                t(lang, "onboarding_dm_sent_self"),
                 mention_author=False,
             )
         else:
             await ctx.reply(
-                "I couldn't send you a DM. Please enable DMs from server members and try again.",
+                t(lang, "onboarding_dm_failed_self"),
                 mention_author=False,
             )
-
 
     @commands.command(
         name="onboarding_for",
         usage="<@user>",
         help="Send onboarding DM to a specific member.",
-        extras={"admin_only": True}  # ← помечаем как админскую
+        extras={"admin_only": True}  # Visible in help only for admins
     )
-    @commands.has_permissions(manage_guild=True)  # офицеры/админы
+    @commands.has_permissions(manage_guild=True)  # Require manage_guild permission
     async def onboarding_for(self, ctx: commands.Context, member: discord.Member):
         """
         Send onboarding DM to a specific member.
         Example: !onboarding_for @Nickname
         """
+        lang = self._get_lang(ctx.author)
         if ctx.guild is None:
             await ctx.reply(
-                "This command must be used in a server channel, not in DMs.",
+                t(lang, "onboarding_guild_only"),
                 mention_author=False,
             )
             return
@@ -64,12 +74,12 @@ class Onboarding(commands.Cog):
 
         if sent:
             await ctx.reply(
-                f"Onboarding DM has been sent to {member.mention}.",
+                t(lang, "onboarding_dm_sent_other").format(member=member.mention),
                 mention_author=False,
             )
         else:
             await ctx.reply(
-                f"I couldn't DM {member.mention}. Their DMs may still be disabled.",
+                t(lang, "onboarding_dm_failed_other").format(member=member.mention),
                 mention_author=False,
             )
 
