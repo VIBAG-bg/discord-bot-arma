@@ -14,7 +14,7 @@ from database.service import get_or_create_user_from_member
 
 
 def _format_game_roles_short(lang: str) -> str:
-    """Краткий список игровых ролей для эмбеда панелей."""
+    """Format a short list of game roles with mentions and descriptions."""
     defs = getattr(Config, "GAME_ROLE_DEFINITIONS", []) or []
     if not defs:
         return t(lang, "no_game_roles")
@@ -26,14 +26,14 @@ def _format_game_roles_short(lang: str) -> str:
             cfg.get("label_ru")
             if lang == "ru"
             else cfg.get("label_en")
-        ) or cfg.get("label") or "Role"
+        ) or cfg.get("label") or t(lang, "role_default_label")
 
         desc_key = "description_ru" if lang == "ru" else "description_en"
         desc = cfg.get(desc_key) or ""
 
         mention = f"<@&{int(role_id)}>" if role_id else name
         if desc:
-            lines.append(f"{mention} — {desc}")
+            lines.append(t(lang, "role_with_description").format(mention=mention, desc=desc))
         else:
             lines.append(mention)
 
@@ -41,7 +41,7 @@ def _format_game_roles_short(lang: str) -> str:
 
 
 def _format_arma_roles_short(lang: str) -> str:
-    """Краткий список ролей по АРМА-операциям."""
+    """Format a short list of ARMA operation roles with mentions and descriptions."""
     defs = getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or []
     if not defs:
         return t(lang, "no_arma_roles")
@@ -53,14 +53,14 @@ def _format_arma_roles_short(lang: str) -> str:
             cfg.get("label_ru")
             if lang == "ru"
             else cfg.get("label_en")
-        ) or cfg.get("label") or "Role"
+        ) or cfg.get("label") or t(lang, "role_default_label")
 
         desc_key = "description_ru" if lang == "ru" else "description_en"
         desc = cfg.get(desc_key) or ""
 
         mention = f"<@&{int(role_id)}>" if role_id else name
         if desc:
-            lines.append(f"{mention} — {desc}")
+            lines.append(t(lang, "role_with_description").format(mention=mention, desc=desc))
         else:
             lines.append(mention)
 
@@ -68,11 +68,11 @@ def _format_arma_roles_short(lang: str) -> str:
 
 
 class PanelGamesButton(discord.ui.Button):
-    """Кнопка 'Получить роль игры' на серверной панели."""
+    """Button to open the game roles menu in the roles panel."""
 
     def __init__(self):
         super().__init__(
-            label=t("ru", "btn_games_panel"),  # текст всё равно переопределим локалью панели
+            label=t("ru", "btn_games_panel"),  # Keep Russian label for panel entry point
             style=discord.ButtonStyle.primary,
             custom_id="panel_choose_games",
         )
@@ -111,7 +111,7 @@ class PanelGamesButton(discord.ui.Button):
 
 
 class PanelArmaButton(discord.ui.Button):
-    """Кнопка 'Получить роль по АРМЕ' на серверной панели."""
+    """Button to open the ARMA roles menu in the roles panel."""
 
     def __init__(self):
         super().__init__(
@@ -176,10 +176,10 @@ class PanelArmaButton(discord.ui.Button):
 
 class ServerRolesPanelView(discord.ui.View):
     """
-    Общая серверная панель:
-    - Получить роль игры
-    - Получить роль по АРМЕ
-    - Стать рекрутом
+    Persistent roles panel view with:
+    - game roles menu
+    - ARMA roles menu
+    - recruit registration
     """
 
     def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
@@ -191,8 +191,7 @@ class ServerRolesPanelView(discord.ui.View):
         self.add_item(PanelGamesButton())
         self.add_item(PanelArmaButton())
 
-        # Используем уже готовую кнопку из онбординга,
-        # только перезапишем текст под текущий язык панели
+        # Clone register button so it can display in the server panel as well
         recruit_btn = RegisterRecruitButton()
         recruit_btn.label = t(lang, "btn_recruit")
         self.add_item(recruit_btn)
@@ -206,10 +205,10 @@ class RolesPanel(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def role_panel(self, ctx: commands.Context):
         """
-        Постит общую панель ролей:
-        - игровые роли
-        - АРМА-специализации (только для recruit_status='done')
-        - кнопка 'Стать рекрутом'
+        Post the roles panel with buttons for:
+        - game roles
+        - ARMA operation specializations (only if recruit_status='done')
+        - register as recruit
         """
 
         lang = getattr(Config, "DEFAULT_LANG", "ru")
