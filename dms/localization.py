@@ -120,6 +120,17 @@ LANGS = {
         ),
         "command_guild_only": "This command can only be used in a guild.",
         "user_updates_done": "Updated {updated} users from guild `{guild}`.",
+        "help_title": "Help • ARMA 3 Bot",
+        "help_description": (
+            "Available commands by category.\n"
+            "Use `{prefix}help <command>` to see details."
+        ),
+        "help_admin_commands": "🔒 Admin commands",
+        "help_general_category": "General",
+        "help_command_line": "`{signature}` — {description}",
+        "help_command_title": "Command: {signature}",
+        "help_category_title": "Category: {name}",
+        "no_description": "No description.",
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -393,6 +404,17 @@ LANGS = {
         ),
         "command_guild_only": "Эту команду можно использовать только на сервере.",
         "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
+        "help_title": "Справка • ARMA 3 Bot",
+        "help_description": (
+            "Доступные команды по категориям.\n"
+            "Используйте `{prefix}help <command>`, чтобы увидеть подробности."
+        ),
+        "help_admin_commands": "🔒 Команды администраторов",
+        "help_general_category": "Общие",
+        "help_command_line": "`{signature}` — {description}",
+        "help_command_title": "Команда: {signature}",
+        "help_category_title": "Категория: {name}",
+        "no_description": "Описание отсутствует.",
         "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
     },
 }

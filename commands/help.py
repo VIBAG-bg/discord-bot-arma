@@ -1,24 +1,25 @@
 import discord
 from discord.ext import commands
+from dms.localization import t
 
 
 class EmbedHelpCommand(commands.MinimalHelpCommand):
     """
-    Автоматический help, который:
-    - показывает команды в embed'ах,
-    - использует usage (типа <@user>),
-    - выносит admin-команды в отдельный раздел.
+    Custom help command that:
+    - formats command list into embeds,
+    - shows full usage (including <@user>),
+    - hides admin-only commands from non-admins.
     """
 
     def _get_prefix(self) -> str:
-        """Безопасно получаем префикс, даже если контекста ещё нет."""
+        """Return the invoked prefix, defaulting to '!' if context is missing."""
         if self.context is not None:
             return self.context.clean_prefix
-        return "!"  # запасной вариант, хотя до него почти не дойдёт
+        return "!"
 
     def get_command_signature(self, command: commands.Command) -> str:
         """
-        Формируем красивую сигнатуру:
+        Build the signature string for a command, e.g.:
         !onboarding_for <@user>
         """
         prefix = self._get_prefix()
@@ -27,23 +28,21 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
 
     async def send_bot_help(self, mapping):
         """
-        Главная страница help:
-        - отдельный блок Admin commands,
-        - ниже команды по категориям (cogs).
+        Render the main help:
+        - shows Admin commands separately,
+        - then iterates through non-admin commands by cogs.
         """
         prefix = self._get_prefix()
+        lang = getattr(self.context, "language", None) or "en"
 
         embed = discord.Embed(
-            title="Help • ARMA 3 Bot",
-            description=(
-                "Список доступных команд.\n"
-                f"Используй `{prefix}help <команда>` для подробностей."
-            ),
+            title=t(lang, "help_title"),
+            description=t(lang, "help_description").format(prefix=prefix),
         )
 
         admin_commands: list[commands.Command] = []
 
-        # Собираем все admin_only команды
+        # Collect commands marked admin_only
         for cog, command_list in mapping.items():
             filtered = await self.filter_commands(command_list, sort=True)
             if not filtered:
@@ -53,20 +52,25 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
                 if command.extras.get("admin_only"):
                     admin_commands.append(command)
 
-        # Добавляем блок Admin commands
+        # Show Admin commands
         if admin_commands:
             lines = []
             for command in admin_commands:
                 sig = self.get_command_signature(command)
-                lines.append(f"`{sig}` — {command.short_doc or 'No description.'}")
+                lines.append(
+                    t(lang, "help_command_line").format(
+                        signature=sig,
+                        description=command.short_doc or t(lang, "no_description"),
+                    )
+                )
 
             embed.add_field(
-                name="🛡 Admin commands",
+                name=t(lang, "help_admin_commands"),
                 value="\n".join(lines),
                 inline=False,
             )
 
-        # Обычные команды по категориям (cogs), без admin_only
+        # Show regular commands grouped by cog, excluding admin_only
         for cog, command_list in mapping.items():
             filtered = await self.filter_commands(command_list, sort=True)
             if not filtered:
@@ -79,12 +83,15 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
             if not regular:
                 continue
 
-            cog_name = cog.qualified_name if cog else "General"
+            cog_name = cog.qualified_name if cog else t(lang, "help_general_category")
             value_lines = []
             for command in regular:
                 sig = self.get_command_signature(command)
                 value_lines.append(
-                    f"`{sig}` — {command.short_doc or 'No description.'}"
+                    t(lang, "help_command_line").format(
+                        signature=sig,
+                        description=command.short_doc or t(lang, "no_description"),
+                    )
                 )
 
             if value_lines:
@@ -98,32 +105,34 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         await destination.send(embed=embed)
 
     async def send_command_help(self, command: commands.Command):
-        """Help для конкретной команды: !help onboarding_for"""
+        """Help for a specific command: !help onboarding_for"""
         sig = self.get_command_signature(command)
+        lang = getattr(self.context, "language", None) or "en"
         embed = discord.Embed(
-            title=f"Command: {sig}",
-            description=command.help or command.short_doc or "No description.",
+            title=t(lang, "help_command_title").format(signature=sig),
+            description=command.help or command.short_doc or t(lang, "no_description"),
         )
 
         destination = self.get_destination()
         await destination.send(embed=embed)
 
     async def send_cog_help(self, cog: commands.Cog):
-        """Help для конкретного cog'а: !help Onboarding"""
+        """Help for a specific cog: !help Onboarding"""
         commands_list = await self.filter_commands(cog.get_commands(), sort=True)
         if not commands_list:
             return
 
+        lang = getattr(self.context, "language", None) or "en"
         embed = discord.Embed(
-            title=f"Category: {cog.qualified_name}",
-            description=cog.__doc__ or "No description.",
+            title=t(lang, "help_category_title").format(name=cog.qualified_name),
+            description=cog.__doc__ or t(lang, "no_description"),
         )
 
         for command in commands_list:
             sig = self.get_command_signature(command)
             embed.add_field(
                 name=sig,
-                value=command.short_doc or "No description.",
+                value=command.short_doc or t(lang, "no_description"),
                 inline=False,
             )
 
