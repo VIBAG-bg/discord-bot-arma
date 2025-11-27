@@ -90,9 +90,9 @@ class OnboardingMainView(discord.ui.View):
 
 
 class ChooseGamesButton(discord.ui.Button):
-    def __init__(self):
+    def __init__(self, lang: str):
         super().__init__(
-            label=t("en", "btn_games"),  # Use English label for a consistent entry point
+            label=t(lang, "btn_games"),
             style=discord.ButtonStyle.secondary,
             custom_id="choose_games",
         )
