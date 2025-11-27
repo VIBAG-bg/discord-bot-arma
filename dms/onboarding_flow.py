@@ -84,8 +84,8 @@ class OnboardingMainView(discord.ui.View):
         self.guild_id = guild_id
         self.lang = lang
 
-        self.add_item(ChooseGamesButton())
-        self.add_item(RegisterRecruitButton())
+        self.add_item(ChooseGamesButton(lang))
+        self.add_item(RegisterRecruitButton(lang))
         self.add_item(LinkSteamButton(lang))
 
 
@@ -321,12 +321,13 @@ class ArmaRoleToggleButton(discord.ui.Button):
 
 
 class RegisterRecruitButton(discord.ui.Button):
-    def __init__(self):
+    def __init__(self, lang: str | None = None):
         super().__init__(
-            label=t("en", "btn_recruit"),
+            label=t(lang or "en", "btn_recruit"),
             style=discord.ButtonStyle.success,
             custom_id="register_recruit",
         )
+        self.lang = lang or "en"
 
     async def callback(self, interaction: discord.Interaction):
         view: OnboardingMainView = self.view  # type: ignore
@@ -349,7 +350,7 @@ class RegisterRecruitButton(discord.ui.Button):
 
         # Refresh user data to get language preference
         user = get_or_create_user_from_member(member)
-        lang = user.language or view.lang or "en"
+        lang = user.language or view.lang or self.lang
 
         # Prevent duplicate applications when status already set
         status = (user.recruit_status or "pending").lower()
@@ -511,6 +512,7 @@ class RegisterRecruitButton(discord.ui.Button):
             recruit_id=member.id,
             text_channel_id=text_ch.id,
             voice_channel_id=voice_ch.id,
+            recruit_lang=lang,
         )
 
         msg = await text_ch.send(
@@ -546,6 +548,7 @@ class LanguageSelectView(discord.ui.View):
         self.guild_id = guild_id
         self.add_item(LanguageButton("en", t("en", "language_name_en")))
         self.add_item(LanguageButton("ru", t("ru", "language_name_ru")))
+        self.add_item(LanguageButton("uk", t("uk", "language_name_uk")))
 
 
 class LanguageButton(discord.ui.Button):
@@ -596,7 +599,7 @@ async def send_onboarding_dm(bot: commands.Bot, member: discord.Member) -> bool:
         get_or_create_user(member.id)
         update_discord_profile(member)
 
-        text = f"{t('ru', 'choose_language')} / {t('en', 'choose_language')}"
+        text = f"{t('en', 'choose_language')} / {t('ru', 'choose_language')} / {t('uk', 'choose_language')}"
 
         await member.send(
             text,
