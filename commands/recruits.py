@@ -16,6 +16,15 @@ from dms.localization import t
 STATUSES = ["pending", "ready", "done", "rejected"]
 
 
+def _lang_from_member(member: discord.Member | None) -> str:
+    """Return stored language for a member or fallback to default config language."""
+    default_lang = getattr(Config, "DEFAULT_LANG", "en")
+    if member is None:
+        return default_lang
+    user = get_or_create_user_from_member(member)
+    return user.language or default_lang
+
+
 class RecruitCommands(commands.Cog):
     """Commands for recruit-related information and synchronization."""
 
@@ -34,6 +43,7 @@ class RecruitCommands(commands.Cog):
           !recruit @User
         """
         target = member or ctx.author
+        lang = _lang_from_member(ctx.author if isinstance(ctx.author, discord.Member) else None)
 
         # Ensure target is a Member object if a partial user was provided
         if not isinstance(target, discord.Member):
@@ -42,11 +52,11 @@ class RecruitCommands(commands.Cog):
                 try:
                     target = await guild.fetch_member(target.id)  # type: ignore
                 except discord.DiscordException:
-                    await ctx.send(t("en", "user_not_in_guild"))
+                    await ctx.send(t(lang, "user_not_in_guild"))
                     return
 
         user = get_or_create_user_from_member(target)
-        lang = user.language or "en"
+        lang = user.language or lang
         status = (user.recruit_status or "pending").lower()
 
         if user.steam_url:
@@ -148,7 +158,7 @@ class RecruitCommands(commands.Cog):
           !recruits
           !recruits ready
         """
-        default_lang = "en"
+        default_lang = _lang_from_member(ctx.author if isinstance(ctx.author, discord.Member) else None)
         if status:
             status = status.lower()
             if status not in STATUSES:
@@ -213,6 +223,7 @@ class RecruitCommands(commands.Cog):
           !user_update @User
         """
         target = member or ctx.author
+        lang = _lang_from_member(ctx.author if isinstance(ctx.author, discord.Member) else None)
 
         if not isinstance(target, discord.Member):
             guild = ctx.guild
@@ -220,13 +231,13 @@ class RecruitCommands(commands.Cog):
                 try:
                     target = await guild.fetch_member(target.id)  # type: ignore
                 except discord.DiscordException:
-                    await ctx.send(t("en", "user_not_in_guild"))
+                    await ctx.send(t(lang, "user_not_in_guild"))
                     return
 
         user = get_or_create_user_from_member(target)
 
         await ctx.send(
-            t("en", "user_synced").format(
+            t(lang, "user_synced").format(
                 target=target,
                 discord_id=user.discord_id,
                 username=user.username,
@@ -247,7 +258,8 @@ class RecruitCommands(commands.Cog):
         """
         guild = ctx.guild
         if guild is None:
-            await ctx.send(t("en", "command_guild_only"))
+            lang = _lang_from_member(ctx.author if isinstance(ctx.author, discord.Member) else None)
+            await ctx.send(t(lang, "command_guild_only"))
             return
 
         updated = 0
@@ -257,7 +269,8 @@ class RecruitCommands(commands.Cog):
             get_or_create_user_from_member(member)
             updated += 1
 
-        await ctx.send(t("en", "user_updates_done").format(updated=updated, guild=guild.name))
+        lang = _lang_from_member(ctx.author if isinstance(ctx.author, discord.Member) else None)
+        await ctx.send(t(lang, "user_updates_done").format(updated=updated, guild=guild.name))
 
 
 async def setup(bot: commands.Bot):

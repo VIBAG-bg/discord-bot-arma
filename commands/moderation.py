@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from typing import Optional
+from config import Config
 from dms.localization import t
 from database.service import get_or_create_user_from_member
 
@@ -10,6 +11,14 @@ class Moderation(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+
+    def _lang_from_author(self, ctx) -> str:
+        """Return author's stored language or default config language."""
+        default_lang = getattr(Config, "DEFAULT_LANG", "en")
+        if isinstance(ctx.author, discord.Member):
+            user = get_or_create_user_from_member(ctx.author)
+            return user.language or default_lang
+        return default_lang
     
     @commands.command(name='kick')
     @commands.has_permissions(kick_members=True)
@@ -23,10 +32,7 @@ class Moderation(commands.Cog):
         
         Requires: Kick Members permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_kick"))
             return
@@ -69,10 +75,7 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_ban"))
             return
@@ -115,10 +118,7 @@ class Moderation(commands.Cog):
         
         Requires: Ban Members permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         try:
             user = await self.bot.fetch_user(user_id)
             await ctx.guild.unban(user, reason=reason)
@@ -154,10 +154,7 @@ class Moderation(commands.Cog):
         Maximum: 100 messages
         Requires: Manage Messages permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         if amount < 1:
             await ctx.send(t(lang, "mod_clear_amount_min"))
             return
@@ -191,10 +188,7 @@ class Moderation(commands.Cog):
         Default duration: 60 minutes
         Requires: Moderate Members permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         if member == ctx.author:
             await ctx.send(t(lang, "mod_cannot_target_self_mute"))
             return
@@ -244,10 +238,7 @@ class Moderation(commands.Cog):
         
         Requires: Moderate Members permission
         """
-        lang = "en"
-        if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            lang = user.language or "en"
+        lang = self._lang_from_author(ctx)
         try:
             await member.timeout(None, reason=reason)
             
