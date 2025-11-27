@@ -1,4 +1,4 @@
-# database/service.py
+﻿# database/service.py
 from contextlib import contextmanager
 
 from typing import List, Optional
@@ -22,7 +22,7 @@ def get_session():
 
 
 def get_or_create_user(discord_id: int) -> User:
-    """Базовая версия — только по discord_id."""
+    """Retrieve an existing user or create a new one by discord_id."""
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=discord_id).first()
         if user is None:
@@ -34,8 +34,8 @@ def get_or_create_user(discord_id: int) -> User:
 
 def get_or_create_user_from_member(member: Member) -> User:
     """
-    Есть Member → можем сразу обновить username / display_name / is_admin.
-    recruit_status тут НЕ трогаем, он управляется рекрутерской логикой.
+    Ensure a Member has a user record and refresh username / display_name / is_admin.
+    recruit_status is not touched so existing application progress is preserved.
     """
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=member.id).first()
@@ -52,7 +52,7 @@ def get_or_create_user_from_member(member: Member) -> User:
 
 
 def user_is_admin(member: Member) -> bool:
-    """Проверка админа для логики бота."""
+    """Return whether the linked user is marked as admin."""
     user = get_or_create_user_from_member(member)
     return bool(user.is_admin)
 
@@ -84,7 +84,7 @@ def link_steam(discord_id: int, steam_id: str) -> None:
 
 
 def update_discord_profile(member: Member) -> None:
-    """Синхронизируем username / display_name / is_admin с БД."""
+    """Refresh username / display_name / is_admin from the member profile."""
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=member.id).first()
         if user is None:
@@ -98,7 +98,7 @@ def update_discord_profile(member: Member) -> None:
 
 
 def set_recruit_status(discord_id: int, status: str) -> None:
-    """Меняем статус рекрута: pending / ready / done."""
+    """Set recruit status: pending / ready / done."""
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=discord_id).first()
         if user is None:
@@ -108,7 +108,7 @@ def set_recruit_status(discord_id: int, status: str) -> None:
             user.recruit_status = status
 
 def set_recruit_channels(discord_id: int, text_id: int | None, voice_id: int | None) -> None:
-    """Сохраняем или обновляем ID каналов рекрута для пользователя."""
+    """Store text and voice channel IDs for the recruit interview channels."""
     with get_session() as db:
         user = db.query(User).filter_by(discord_id=discord_id).first()
         if user is None:
@@ -121,12 +121,12 @@ def set_recruit_channels(discord_id: int, text_id: int | None, voice_id: int | N
 
 
 def get_recruit_code(user: User) -> str:
-    """Генерируем код рекрута по его ID в формате R-0001, R-0002 и т.д."""
+    """Return recruit code based on user ID using the R-0001, R-0002 pattern."""
     return f"R-{user.id:04d}"
 
 
 def get_recruits_all() -> list[User]:
-    """Все пользователи, у которых recruit_status НЕ NULL."""
+    """Return all recruits where recruit_status is not NULL."""
     with SessionLocal() as session:
         return (
             session.query(User)
@@ -136,7 +136,7 @@ def get_recruits_all() -> list[User]:
         )
 
 def get_recruits_by_status(status: str) -> list[User]:
-    """Рекруты с конкретным статусом: pending / ready / done / rejected."""
+    """Return recruits filtered by status: pending / ready / done / rejected."""
     status = (status or "").lower()
     with SessionLocal() as session:
         return (
@@ -147,7 +147,7 @@ def get_recruits_by_status(status: str) -> list[User]:
         )
 
 def get_user_by_discord_id(discord_id: int) -> Optional[User]:
-    """Пользователь по discord_id."""
+    """Return a user by discord_id if present."""
     with SessionLocal() as session:
         return (
             session.query(User)
@@ -156,7 +156,7 @@ def get_user_by_discord_id(discord_id: int) -> Optional[User]:
         )
 
 def get_user_by_username(username: str) -> Optional[User]:
-    """Пользователь по Discord username (sillygilly3544 и т.п.)."""
+    """Return a user by Discord username (e.g., sillygilly3544)."""
     with SessionLocal() as session:
         return (
             session.query(User)
