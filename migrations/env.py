@@ -9,7 +9,7 @@ from database.models import Base
 
 config = context.config
 
-# если URL есть в Config – используем его
+# Set up the database URL from the Config
 database_url = Config.DATABASE_URL
 config.set_main_option("sqlalchemy.url", database_url)
 

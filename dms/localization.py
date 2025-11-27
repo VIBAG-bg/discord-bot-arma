@@ -309,6 +309,62 @@ LANGS = {
             "To complete your registration, please link your SteamID64.\n"
             "Press the button below and fill in the form."
         ),
+        "welcome_message_default": (
+            "Welcome to the ARMA 3 tactical community. We focus on coordination, discipline, "
+            "and joint operations. Before we deploy, please choose your roles and register as a "
+            "recruit so the staff can learn your interests and prepare you for upcoming missions."
+        ),
+        "config_game_role_arma3_label": "ARMA 3",
+        "config_game_role_arma3_description": "Tactical military simulation game.",
+        "config_game_role_squad_label": "Squad",
+        "config_game_role_squad_description": "Team-based military FPS game.",
+        "config_game_role_csgo_label": "CS GO",
+        "config_game_role_csgo_description": "Competitive first-person shooter game.",
+        "config_game_role_minecraft_label": "Minecraft",
+        "config_game_role_minecraft_description": "Sandbox construction and survival game.",
+        "config_game_role_rust_label": "Rust",
+        "config_game_role_rust_description": "Survival game set in a post-apocalyptic world.",
+        "config_arma_role_squad_leader_label": "Squad Leader",
+        "config_arma_role_squad_leader_description": (
+            "Leads the squad, coordinates movement and communication."
+        ),
+        "config_arma_role_team_leader_label": "Team Leader",
+        "config_arma_role_team_leader_description": "Leads a fireteam during engagements.",
+        "config_arma_role_rifleman_label": "Rifleman",
+        "config_arma_role_rifleman_description": (
+            "Standard infantry role, main firepower of the squad."
+        ),
+        "config_arma_role_medic_label": "Medic",
+        "config_arma_role_medic_description": (
+            "Provides medical support and stabilizes injured teammates."
+        ),
+        "config_arma_role_autorifleman_label": "Autorifleman",
+        "config_arma_role_autorifleman_description": (
+            "Delivers suppressive fire using a machine gun."
+        ),
+        "config_arma_role_at_specialist_label": "AT Specialist",
+        "config_arma_role_at_specialist_description": (
+            "Carries anti-tank weapons and engages armored vehicles."
+        ),
+        "config_arma_role_marksman_label": "Marksman",
+        "config_arma_role_marksman_description": (
+            "Engages targets at medium-long distances with high accuracy."
+        ),
+        "config_arma_role_engineer_label": "Engineer",
+        "config_arma_role_engineer_description": (
+            "Handles explosives, repairs vehicles, performs technical tasks."
+        ),
+        "role_def_assault_label": "Assault",
+        "role_def_assault_description": "Frontline infantry focused on direct engagements.",
+        "role_def_medic_label": "Medic",
+        "role_def_medic_description": "Keeps squads alive with triage and evacuations.",
+        "role_def_pilot_label": "Pilot",
+        "role_def_pilot_description": (
+            "Provides air transport, close air support, and logistics."
+        ),
+        "role_def_support_label": "Support",
+        "role_def_support_description": "Handles vehicles, heavy weapons, and resupply.",
+        "missing_discord_token_env": "DISCORD_TOKEN is not set in .env file",
     },
     "ru": {
         "greeting": "Привет, {name}!",
@@ -617,6 +673,72 @@ LANGS = {
         "recruit_moderation_confirm_no": "Отменено.",
         "recruit_moderation_denied_label": "Отклонено.",
         "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
+
+        "welcome_message_default": (
+            "Добро пожаловать в тактическое сообщество ARMA 3. Мы уделяем внимание "
+            "координации, дисциплине и совместным операциям. Перед тем как начать, "
+            "выберите роли и зарегистрируйтесь как рекрут, чтобы рекрутеры могли узнать ваши "
+            "интересы и подготовить вас к предстоящим миссиям."
+        ),
+        "config_game_role_arma3_label": "ARMA 3",
+        "config_game_role_arma3_description": "Тактический военный симулятор.",
+        "config_game_role_squad_label": "Squad",
+        "config_game_role_squad_description": "Командный военный шутер от первого лица.",
+        "config_game_role_csgo_label": "CS GO",
+        "config_game_role_csgo_description": "Соревновательный шутер от первого лица.",
+        "config_game_role_minecraft_label": "Minecraft",
+        "config_game_role_minecraft_description": "Песочница про строительство и выживание.",
+        "config_game_role_rust_label": "Rust",
+        "config_game_role_rust_description": "Выживание в постапокалиптическом мире.",
+        "config_arma_role_squad_leader_label": "Командир отделения",
+        "config_arma_role_squad_leader_description": (
+            "Ведет отделение, координирует перемещения и связь."
+        ),
+        "config_arma_role_team_leader_label": "Командир звена",
+        "config_arma_role_team_leader_description": (
+            "Командует звеном во время боевого контакта."
+        ),
+        "config_arma_role_rifleman_label": "Стрелок",
+        "config_arma_role_rifleman_description": (
+            "Базовая стрелковая роль, основной огневой ресурс отделения."
+        ),
+        "config_arma_role_medic_label": "Медик",
+        "config_arma_role_medic_description": (
+            "Оказывает медицинскую поддержку и стабилизирует раненых."
+        ),
+        "config_arma_role_autorifleman_label": "Пулеметчик",
+        "config_arma_role_autorifleman_description": (
+            "Ведет подавляющий огонь из пулемета."
+        ),
+        "config_arma_role_at_specialist_label": "ПТ-специалист",
+        "config_arma_role_at_specialist_description": (
+            "Использует противотанковое оружие и поражает бронетехнику."
+        ),
+        "config_arma_role_marksman_label": "Маркер / Дальний стрелок",
+        "config_arma_role_marksman_description": (
+            "Поражает цели на средних и дальних дистанциях с высокой точностью."
+        ),
+        "config_arma_role_engineer_label": "Инженер",
+        "config_arma_role_engineer_description": (
+            "Работает со взрывчаткой, ремонтирует технику, решает технические задачи."
+        ),
+        "role_def_assault_label": "Штурм",
+        "role_def_assault_description": (
+            "Линейная пехота, сфокусированная на прямых столкновениях."
+        ),
+        "role_def_medic_label": "Медик",
+        "role_def_medic_description": (
+            "Поддерживает отделения за счет медицины и эвакуации."
+        ),
+        "role_def_pilot_label": "Пилот",
+        "role_def_pilot_description": (
+            "Обеспечивает воздушный транспорт, поддержку с воздуха и логистику."
+        ),
+        "role_def_support_label": "Поддержка",
+        "role_def_support_description": (
+            "Работает с техникой, тяжелым вооружением и снабжением."
+        ),
+        "missing_discord_token_env": "DISCORD_TOKEN не указан в файле .env",
     },
 }
 

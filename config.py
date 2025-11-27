@@ -1,5 +1,6 @@
-import os
+﻿import os
 from dotenv import load_dotenv
+from dms.localization import t
 
 load_dotenv()
 
@@ -9,15 +10,12 @@ class Config:
 
     _raw_db_url = os.getenv("DATABASE_URL")
 
-    # Хероку даёт postgres://, SQLAlchemy хочет postgresql+psycopg2://
+    # Heroku provides postgres://, SQLAlchemy expects postgresql+psycopg2://
     if _raw_db_url and _raw_db_url.startswith("postgres://"):
         _raw_db_url = _raw_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
 
-    # ФИНАЛЬНЫЙ URL
+    # Fallback URL for local development
     DATABASE_URL = _raw_db_url or "sqlite:///bot.db"
-
-
-
 
     # Discord bot token (required)
     TOKEN: str | None = os.getenv("DISCORD_TOKEN")
@@ -26,150 +24,136 @@ class Config:
     PREFIX: str = os.getenv("COMMAND_PREFIX", "!")
 
     # Bot owner ID (optional)
-    OWNER_ID: int | None = (
-        int(os.getenv("OWNER_ID")) if os.getenv("OWNER_ID") else None
-    )
+    OWNER_ID: int | None = int(os.getenv("OWNER_ID")) if os.getenv("OWNER_ID") else None
 
     # Welcome/onboarding text used in DM greeting
     WELCOME_MESSAGE_ENG: str = os.getenv(
         "WELCOME_MESSAGE",
-        (
-            "Welcome to the ARMA 3 tactical community. We focus on coordination, "
-            "discipline, and joint operations. Before we deploy, please choose your roles "
-            "and register as a recruit so the staff can learn your interests and prepare "
-            "you for upcoming missions."
-        ),
+        t("en", "welcome_message_default"),
     )
 
     WELCOME_MESSAGE_RUS: str = os.getenv(
         "WELCOME_MESSAGE_RUS",
-        (
-            "Добро пожаловать в тактическое сообщество ARMA 3. "
-            "Мы уделяем особое внимание координации, дисциплине и совместным операциям. "
-            "Перед началом выберите свои роли и зарегистрируйтесь в качестве новобранца, "
-            "чтобы персонал мог узнать о ваших интересах и подготовить вас к предстоящим миссиям."
-        ),
+        t("ru", "welcome_message_default"),
     )
 
     # Discord channel ID used as fallback when a DM cannot be delivered
     FALLBACK_CHANNEL_ID: int = int(os.getenv("FALLBACK_CHANNEL_ID", "0"))
 
-        # Язык по умолчанию для серверных панелей (role_panel и т.п.)
+    # Default language for UI text shown outside user-specific context (e.g., role_panel)
     DEFAULT_LANG: str = os.getenv("DEFAULT_LANG", "ru")
 
-    # Игровые роли, которые можно выбирать через онбординг и !role_panel
+    # Game role definitions shown in role selection panels; structure: id, label_en/label_ru, emoji
     GAME_ROLE_DEFINITIONS: list[dict] = [
         {
             "id": int(os.getenv("GAME_ROLE_ARMA3_ID", "0")),
-            "label_en": "ARMA 3",
-            "label_ru": "ARMA 3",
-            "description_en": "Tactical military simulation game.",
-            "description_ru": "Тактический военный симулятор.",
-            "emoji": "🎯",
+            "label_en": t("en", "config_game_role_arma3_label"),
+            "label_ru": t("ru", "config_game_role_arma3_label"),
+            "description_en": t("en", "config_game_role_arma3_description"),
+            "description_ru": t("ru", "config_game_role_arma3_description"),
+            "emoji": "🎮",
         },
         {
             "id": int(os.getenv("GAME_ROLE_SQUAD_ID", "0")),
-            "label_en": "Squad",
-            "label_ru": "Squad",
-            "description_en": "Team-based military FPS game.",
-            "description_ru": "Командный военный шутер от первого лица.",
+            "label_en": t("en", "config_game_role_squad_label"),
+            "label_ru": t("ru", "config_game_role_squad_label"),
+            "description_en": t("en", "config_game_role_squad_description"),
+            "description_ru": t("ru", "config_game_role_squad_description"),
             "emoji": "🪖",
         },
         {
             "id": int(os.getenv("GAME_ROLE_CSGO_ID", "0")),
-            "label_en": "CS GO",
-            "label_ru": "CS GO",
-            "description_en": "Competitive first-person shooter game.",
-            "description_ru": "Конкурентный шутер от первого лица.",
-            "emoji": "💥",
+            "label_en": t("en", "config_game_role_csgo_label"),
+            "label_ru": t("ru", "config_game_role_csgo_label"),
+            "description_en": t("en", "config_game_role_csgo_description"),
+            "description_ru": t("ru", "config_game_role_csgo_description"),
+            "emoji": "🔫",
         },
         {
             "id": int(os.getenv("GAME_ROLE_MINECRAFT_ID", "0")),
-            "label_en": "Minecraft",
-            "label_ru": "Minecraft",
-            "description_en": "Sandbox construction and survival game.",
-            "description_ru": "Песочница для строительства и выживания.",
+            "label_en": t("en", "config_game_role_minecraft_label"),
+            "label_ru": t("ru", "config_game_role_minecraft_label"),
+            "description_en": t("en", "config_game_role_minecraft_description"),
+            "description_ru": t("ru", "config_game_role_minecraft_description"),
             "emoji": "⛏️",
         },
         {
             "id": int(os.getenv("GAME_ROLE_RUST_ID", "0")),
-            "label_en": "Rust",
-            "label_ru": "Rust",
-            "description_en": "Survival game set in a post-apocalyptic world.",
-            "description_ru": "Игра на выживание в постапокалиптическом мире.",
-            "emoji": "🪓",
+            "label_en": t("en", "config_game_role_rust_label"),
+            "label_ru": t("ru", "config_game_role_rust_label"),
+            "description_en": t("en", "config_game_role_rust_description"),
+            "description_ru": t("ru", "config_game_role_rust_description"),
+            "emoji": "🛠️",
         },
-        # добавь/убери по вкусу, главное: id, label_en/label_ru, emoji
+        # Add/edit items above as needed: id, label_en/label_ru, emoji
     ]
 
-
     ARMA_ROLE_DEFINITIONS = [
-    {
-        "id": int(os.getenv("ARMA_ROLE_SQUAD_LEADER_ID", "0")),
-        "label_en": "Squad Leader",
-        "label_ru": "Командир отделения",
-        "description_en": "Leads the squad, coordinates movement and communication.",
-        "description_ru": "Руководит отделением, координирует передвижение и связь.",
-        "emoji": "🎯",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_TEAM_LEADER_ID", "0")),
-        "label_en": "Team Leader",
-        "label_ru": "Командир звена",
-        "description_en": "Leads a fireteam during engagements.",
-        "description_ru": "Управляет боевым звеном во время боевых действий.",
-        "emoji": "🔱",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_RIFLEMAN_ID", "0")),
-        "label_en": "Rifleman",
-        "label_ru": "Стрелок",
-        "description_en": "Standard infantry role, main firepower of the squad.",
-        "description_ru": "Базовая пехотная роль, главный носитель огневой мощи.",
-        "emoji": "🔫",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_MEDIC_ID", "0")),
-        "label_en": "Medic",
-        "label_ru": "Медик",
-        "description_en": "Provides medical support and stabilizes injured teammates.",
-        "description_ru": "Оказывает медицинскую помощь и стабилизирует раненых.",
-        "emoji": "⛑️",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_AUTORIFLEMAN_ID", "0")),
-        "label_en": "Autorifleman",
-        "label_ru": "Пулемётчик",
-        "description_en": "Delivers suppressive fire using a machine gun.",
-        "description_ru": "Ведёт подавляющий огонь из пулемёта.",
-        "emoji": "🧨",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_AT_SPECIALIST_ID", "0")),
-        "label_en": "AT Specialist",
-        "label_ru": "ПТ-специалист",
-        "description_en": "Carries anti-tank weapons and engages armored vehicles.",
-        "description_ru": "Использует противотанковое оружие, уничтожает бронетехнику.",
-        "emoji": "🚀",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_MARKSMAN_ID", "0")),
-        "label_en": "Marksman",
-        "label_ru": "Маркер / Дальнобойщик",
-        "description_en": "Engages targets at medium-long distances with high accuracy.",
-        "description_ru": "Атакует цели на средних и дальних дистанциях с высокой точностью.",
-        "emoji": "🎯",
-    },
-    {
-        "id": int(os.getenv("ARMA_ROLE_ENGINEER_ID", "0")),
-        "label_en": "Engineer",
-        "label_ru": "Инженер",
-        "description_en": "Handles explosives, repairs vehicles, performs technical tasks.",
-        "description_ru": "Работает с взрывчаткой, техникой и инженерными задачами.",
-        "emoji": "🛠️",
-    },
-]
-
+        {
+            "id": int(os.getenv("ARMA_ROLE_SQUAD_LEADER_ID", "0")),
+            "label_en": t("en", "config_arma_role_squad_leader_label"),
+            "label_ru": t("ru", "config_arma_role_squad_leader_label"),
+            "description_en": t("en", "config_arma_role_squad_leader_description"),
+            "description_ru": t("ru", "config_arma_role_squad_leader_description"),
+            "emoji": "🗺️",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_TEAM_LEADER_ID", "0")),
+            "label_en": t("en", "config_arma_role_team_leader_label"),
+            "label_ru": t("ru", "config_arma_role_team_leader_label"),
+            "description_en": t("en", "config_arma_role_team_leader_description"),
+            "description_ru": t("ru", "config_arma_role_team_leader_description"),
+            "emoji": "📡",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_RIFLEMAN_ID", "0")),
+            "label_en": t("en", "config_arma_role_rifleman_label"),
+            "label_ru": t("ru", "config_arma_role_rifleman_label"),
+            "description_en": t("en", "config_arma_role_rifleman_description"),
+            "description_ru": t("ru", "config_arma_role_rifleman_description"),
+            "emoji": "🎯",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_MEDIC_ID", "0")),
+            "label_en": t("en", "config_arma_role_medic_label"),
+            "label_ru": t("ru", "config_arma_role_medic_label"),
+            "description_en": t("en", "config_arma_role_medic_description"),
+            "description_ru": t("ru", "config_arma_role_medic_description"),
+            "emoji": "🩺",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_AUTORIFLEMAN_ID", "0")),
+            "label_en": t("en", "config_arma_role_autorifleman_label"),
+            "label_ru": t("ru", "config_arma_role_autorifleman_label"),
+            "description_en": t("en", "config_arma_role_autorifleman_description"),
+            "description_ru": t("ru", "config_arma_role_autorifleman_description"),
+            "emoji": "💥",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_AT_SPECIALIST_ID", "0")),
+            "label_en": t("en", "config_arma_role_at_specialist_label"),
+            "label_ru": t("ru", "config_arma_role_at_specialist_label"),
+            "description_en": t("en", "config_arma_role_at_specialist_description"),
+            "description_ru": t("ru", "config_arma_role_at_specialist_description"),
+            "emoji": "🚀",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_MARKSMAN_ID", "0")),
+            "label_en": t("en", "config_arma_role_marksman_label"),
+            "label_ru": t("ru", "config_arma_role_marksman_label"),
+            "description_en": t("en", "config_arma_role_marksman_description"),
+            "description_ru": t("ru", "config_arma_role_marksman_description"),
+            "emoji": "🎯",
+        },
+        {
+            "id": int(os.getenv("ARMA_ROLE_ENGINEER_ID", "0")),
+            "label_en": t("en", "config_arma_role_engineer_label"),
+            "label_ru": t("ru", "config_arma_role_engineer_label"),
+            "description_en": t("en", "config_arma_role_engineer_description"),
+            "description_ru": t("ru", "config_arma_role_engineer_description"),
+            "emoji": "🔧",
+        },
+    ]
 
     # Recruit role ID (button "Register as Recruit")
     RECRUIT_ROLE_ID: int = int(os.getenv("RECRUIT_ROLE_ID", "0"))
@@ -177,46 +161,46 @@ class Config:
     # Static list of roles that can be self-assigned via onboarding DM
     ROLE_DEFINITIONS_ENG: list[dict] = [
         {
-            "label": "Assault",
-            "description": "Frontline infantry focused on direct engagements.",
+            "label": t("en", "role_def_assault_label"),
+            "description": t("en", "role_def_assault_description"),
             "id": int(os.getenv("ROLE_ASSAULT_ID", "0")),
         },
         {
-            "label": "Medic",
-            "description": "Keeps squads alive with triage and evacuations.",
+            "label": t("en", "role_def_medic_label"),
+            "description": t("en", "role_def_medic_description"),
             "id": int(os.getenv("ROLE_MEDIC_ID", "0")),
         },
         {
-            "label": "Pilot",
-            "description": "Provides air transport, close air support, and logistics.",
+            "label": t("en", "role_def_pilot_label"),
+            "description": t("en", "role_def_pilot_description"),
             "id": int(os.getenv("ROLE_PILOT_ID", "0")),
         },
         {
-            "label": "Support",
-            "description": "Handles vehicles, heavy weapons, and resupply.",
+            "label": t("en", "role_def_support_label"),
+            "description": t("en", "role_def_support_description"),
             "id": int(os.getenv("ROLE_SUPPORT_ID", "0")),
         },
     ]
 
     ROLE_DEFINITIONS_RUS: list[dict] = [
         {
-            "label": "Штурмовик",
-            "description": "Пехота передовой, сосредоточенная на прямых столкновениях.",
+            "label": t("ru", "role_def_assault_label"),
+            "description": t("ru", "role_def_assault_description"),
             "id": int(os.getenv("ROLE_ASSAULT_ID", "0")),
         },
         {
-            "label": "Медик",
-            "description": "Поддерживает отряды живыми с помощью сортировки и эвакуации.",
+            "label": t("ru", "role_def_medic_label"),
+            "description": t("ru", "role_def_medic_description"),
             "id": int(os.getenv("ROLE_MEDIC_ID", "0")),
         },
         {
-            "label": "Пилот",
-            "description": "Обеспечивает воздушную транспортировку, поддержку с воздуха и логистику.",
+            "label": t("ru", "role_def_pilot_label"),
+            "description": t("ru", "role_def_pilot_description"),
             "id": int(os.getenv("ROLE_PILOT_ID", "0")),
         },
         {
-            "label": "Поддержка",
-            "description": "Обслуживает транспортные средства, тяжелое оружие и пополнение запасов.",
+            "label": t("ru", "role_def_support_label"),
+            "description": t("ru", "role_def_support_description"),
             "id": int(os.getenv("ROLE_SUPPORT_ID", "0")),
         },
     ]
@@ -224,17 +208,16 @@ class Config:
     RECRUITER_ROLE_ID: int = int(os.getenv("RECRUITER_ROLE_ID") or "0")
     RECRUIT_CATEGORY_ID: int = int(os.getenv("RECRUIT_CATEGORY_ID") or "0")
 
-    # основная роль участника, если хочешь её выдавать после approve
+    # Member role that is granted after recruit approval
     MEMBER_ROLE_ID: int = int(os.getenv("MEMBER_ROLE_ID", "0"))
 
-    # категория для архива рекрутов (необязательно, можно оставить 0)
+    # Category used to store archived recruit channels (0 disables archiving)
     RECRUIT_ARCHIVE_CATEGORY_ID: int = int(os.getenv("RECRUIT_ARCHIVE_CATEGORY_ID", "0"))
-
-
 
     @staticmethod
     def validate() -> bool:
         """Validate that required configuration is present."""
+        lang = getattr(Config, "DEFAULT_LANG", "en")
         if not Config.TOKEN:
-            raise ValueError("DISCORD_TOKEN is not set in .env file")
+            raise ValueError(t(lang, "missing_discord_token_env"))
         return True
