@@ -207,6 +207,10 @@ LANGS = {
             "**\"Link Steam ID\"** button in the onboarding message.\n"
             "After that you can approve the application."
         ),
+        "recruit_moderation_dm_link_steam": (
+            "To complete your recruit application, please link your **SteamID64**.\n"
+            "Press the **\"Link Steam ID\"** button below and submit your 17-digit SteamID64."
+        ),
         "recruit_moderation_dm_approved": (
             "Congratulations! Your recruit application has been approved. "
             "Now you are a full member and got your member role! Welcome aboard!"
@@ -653,6 +657,10 @@ LANGS = {
             "Попросите его открыть личные сообщения с ботом и нажать кнопку "
             "**\"Link Steam ID\"** в онбординг-сообщении.\n"
             "После этого можно одобрить заявку."
+        ),
+        "recruit_moderation_dm_link_steam": (
+            "Чтобы завершить заявку рекрута, привяжите свой **SteamID64**.\n"
+            "Нажмите кнопку **\"Link Steam ID\"** ниже и отправьте свой 17-значный SteamID64."
         ),
         "recruit_moderation_dm_approved": (
             "Поздравляем! Ваша заявка рекрута одобрена. "

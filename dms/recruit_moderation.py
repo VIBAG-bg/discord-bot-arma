@@ -9,6 +9,7 @@ from database.service import (
     set_recruit_status,
 )
 from dms.localization import t
+from dms.steam_link import SteamLinkView
 
 
 class RecruitModerationView(discord.ui.View):
@@ -170,6 +171,19 @@ class RecruitModerationView(discord.ui.View):
         mod_lang = self._get_user_lang(interaction)
 
         if not getattr(db_user, "steam_id", None):
+            try:
+                await recruit.send(
+                    t(recruit_lang, "recruit_moderation_dm_link_steam"),
+                    view=SteamLinkView(recruit_lang),
+                )
+            except discord.Forbidden:
+                print(
+                    f"[Recruit DM] Cannot DM {recruit} (forbidden)",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(f"[Recruit DM ERROR] {type(e).__name__}: {e}", file=sys.stderr)
+
             await interaction.followup.send(
                 t(mod_lang, "recruit_moderation_missing_steam"),
                 ephemeral=True,
