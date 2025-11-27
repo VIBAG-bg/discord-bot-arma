@@ -47,7 +47,7 @@ def _build_onboarding_embed(member: discord.Member, lang: str) -> discord.Embed:
     """Build the onboarding embed that greets a user and links to setup actions."""
     greeting = t(lang, "greeting").format(name=member.display_name)
     body = t(lang, "onboarding_body")
-    intro = Config.WELCOME_MESSAGE_ENG if lang == "en" else Config.WELCOME_MESSAGE_RUS
+    intro = t(lang, "welcome_message_default")
 
     desc = f"{greeting}\n\n{intro}\n\n{body}"
 
