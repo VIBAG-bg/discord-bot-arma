@@ -70,9 +70,9 @@ def _format_arma_roles_short(lang: str) -> str:
 class PanelGamesButton(discord.ui.Button):
     """Button to open the game roles menu in the roles panel."""
 
-    def __init__(self):
+    def __init__(self, lang: str):
         super().__init__(
-            label=t("ru", "btn_games_panel"),  # Keep Russian label for panel entry point
+            label=t(lang, "btn_games_panel"),
             style=discord.ButtonStyle.primary,
             custom_id="panel_choose_games",
         )
@@ -113,9 +113,9 @@ class PanelGamesButton(discord.ui.Button):
 class PanelArmaButton(discord.ui.Button):
     """Button to open the ARMA roles menu in the roles panel."""
 
-    def __init__(self):
+    def __init__(self, lang: str):
         super().__init__(
-            label=t("ru", "btn_arma_panel"),
+            label=t(lang, "btn_arma_panel"),
             style=discord.ButtonStyle.secondary,
             custom_id="panel_choose_arma",
         )
@@ -188,8 +188,8 @@ class ServerRolesPanelView(discord.ui.View):
         self.guild_id = guild_id
         self.lang = lang
 
-        self.add_item(PanelGamesButton())
-        self.add_item(PanelArmaButton())
+        self.add_item(PanelGamesButton(self.lang))
+        self.add_item(PanelArmaButton(self.lang))
 
         # Clone register button so it can display in the server panel as well
         recruit_btn = RegisterRecruitButton()

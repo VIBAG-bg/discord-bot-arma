@@ -198,7 +198,6 @@ LANGS = {
         "mod_duration_minutes": "{minutes} minutes",
         "mod_error_generic": "🚫 An error occurred: {error}",
         "mod_user_not_found_or_not_banned": "🚫 User not found or not banned.",
-        "role_with_description": "{mention} - {desc}",
         "recruit_category_not_configured": "Recruit category is not configured correctly.",
         "recruit_not_found_server": "Recruit not found on the server.",
         "recruit_moderation_missing_steam": (
