@@ -1,9 +1,8 @@
 import discord
 from discord.ext import commands
 from typing import Optional
-from config import Config
 from dms.localization import t
-from database.service import get_or_create_user_from_member
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 class Moderation(commands.Cog):
@@ -14,11 +13,11 @@ class Moderation(commands.Cog):
 
     def _lang_from_author(self, ctx) -> str:
         """Return author's stored language or default config language."""
-        default_lang = getattr(Config, "DEFAULT_LANG", "en")
         if isinstance(ctx.author, discord.Member):
-            user = get_or_create_user_from_member(ctx.author)
-            return user.language or default_lang
-        return default_lang
+            return get_lang_for_member(ctx.author)
+        if isinstance(ctx.author, discord.abc.User):
+            return get_lang_for_user(ctx.author)
+        return "en"
     
     @commands.command(name='kick')
     @commands.has_permissions(kick_members=True)

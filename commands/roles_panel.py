@@ -11,6 +11,7 @@ from dms.onboarding_flow import (
     RegisterRecruitButton,
 )
 from database.service import get_or_create_user_from_member
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 def _format_game_roles_short(lang: str) -> str:
@@ -211,7 +212,12 @@ class RolesPanel(commands.Cog):
         - register as recruit
         """
 
-        lang = getattr(Config, "DEFAULT_LANG", "ru")
+        if isinstance(ctx.author, discord.Member):
+            lang = get_lang_for_member(ctx.author)
+        elif isinstance(ctx.author, discord.abc.User):
+            lang = get_lang_for_user(ctx.author)
+        else:
+            lang = getattr(Config, "DEFAULT_LANG", "en")
 
         has_games = bool(getattr(Config, "GAME_ROLE_DEFINITIONS", []) or [])
         has_arma = bool(getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or [])

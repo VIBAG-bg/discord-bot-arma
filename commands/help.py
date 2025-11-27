@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from database.service import get_or_create_user_from_member
 from dms.localization import t
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 class EmbedHelpCommand(commands.MinimalHelpCommand):
@@ -65,10 +65,12 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         """
         prefix = self._get_prefix()
         author = getattr(self.context, "author", None)
-        lang = "en"
         if isinstance(author, discord.Member):
-            user = get_or_create_user_from_member(author)
-            lang = user.language or "en"
+            lang = get_lang_for_member(author)
+        elif isinstance(author, discord.abc.User):
+            lang = get_lang_for_user(author)
+        else:
+            lang = "en"
 
         embed = discord.Embed(
             title=t(lang, "help_title"),
@@ -143,10 +145,12 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
         """Help for a specific command: !help onboarding_for"""
         sig = self.get_command_signature(command)
         author = getattr(self.context, "author", None)
-        lang = "en"
         if isinstance(author, discord.Member):
-            user = get_or_create_user_from_member(author)
-            lang = user.language or "en"
+            lang = get_lang_for_member(author)
+        elif isinstance(author, discord.abc.User):
+            lang = get_lang_for_user(author)
+        else:
+            lang = "en"
         embed = discord.Embed(
             title=t(lang, "help_command_title").format(signature=sig),
             description=self._get_command_description(command, lang),
@@ -162,10 +166,12 @@ class EmbedHelpCommand(commands.MinimalHelpCommand):
             return
 
         author = getattr(self.context, "author", None)
-        lang = "en"
         if isinstance(author, discord.Member):
-            user = get_or_create_user_from_member(author)
-            lang = user.language or "en"
+            lang = get_lang_for_member(author)
+        elif isinstance(author, discord.abc.User):
+            lang = get_lang_for_user(author)
+        else:
+            lang = "en"
         embed = discord.Embed(
             title=t(lang, "help_category_title").format(name=cog.qualified_name),
             description=cog.__doc__ or t(lang, "no_description"),

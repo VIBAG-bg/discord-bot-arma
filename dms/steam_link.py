@@ -5,6 +5,7 @@ import discord
 
 from database.service import get_or_create_user, link_steam
 from dms.localization import t
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 class SteamLinkModal(discord.ui.Modal):

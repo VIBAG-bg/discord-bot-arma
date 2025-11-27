@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
-from database.service import get_or_create_user_from_member
 from dms.localization import t
 from dms.onboarding_flow import send_onboarding_dm
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 class Onboarding(commands.Cog):
@@ -14,8 +14,9 @@ class Onboarding(commands.Cog):
     def _get_lang(self, member: discord.Member | discord.User) -> str:
         """Return the preferred language for the member or default to English."""
         if isinstance(member, discord.Member):
-            user = get_or_create_user_from_member(member)
-            return user.language or "en"
+            return get_lang_for_member(member)
+        if isinstance(member, discord.abc.User):
+            return get_lang_for_user(member)
         return "en"
 
     @commands.command(

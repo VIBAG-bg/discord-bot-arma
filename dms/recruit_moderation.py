@@ -10,6 +10,7 @@ from database.service import (
 )
 from dms.localization import t
 from dms.steam_link import SteamLinkView
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 class RecruitModerationView(discord.ui.View):
@@ -68,13 +69,10 @@ class RecruitModerationView(discord.ui.View):
 
     def _get_user_lang(self, interaction: discord.Interaction) -> str:
         """Return the moderator's preferred language or default."""
-        guild = interaction.guild or interaction.client.get_guild(self.guild_id)
-        if guild:
-            member = guild.get_member(interaction.user.id)
-            if member:
-                db_user = get_or_create_user_from_member(member)
-                if getattr(db_user, "language", None):
-                    return db_user.language
+        if isinstance(interaction.user, discord.Member):
+            return get_lang_for_member(interaction.user)
+        if isinstance(interaction.user, discord.abc.User):
+            return get_lang_for_user(interaction.user)
         return getattr(Config, "DEFAULT_LANG", "en")
 
     async def _archive_or_lock_channels(

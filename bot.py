@@ -21,6 +21,7 @@ from database.service import (
     set_recruit_status,
 )
 from dms.localization import t
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 
 # Configure bot intents
@@ -40,16 +41,21 @@ bot = commands.Bot(
 
 def _get_lang_from_ctx(ctx: commands.Context) -> str:
     """Return preferred language for the author or default language."""
-    if isinstance(getattr(ctx, "author", None), discord.Member):
-        user = get_or_create_user_from_member(ctx.author)
-        return user.language or getattr(Config, "DEFAULT_LANG", "en")
+    author = getattr(ctx, "author", None)
+    if isinstance(author, discord.Member):
+        return get_lang_for_member(author)
+    if isinstance(author, discord.abc.User):
+        return get_lang_for_user(author)
     return getattr(Config, "DEFAULT_LANG", "en")
 
 
 def _get_lang_from_member(member: discord.Member) -> str:
     """Return preferred language for a member or default language."""
-    user = get_or_create_user_from_member(member)
-    return user.language or getattr(Config, "DEFAULT_LANG", "en")
+    if isinstance(member, discord.Member):
+        return get_lang_for_member(member)
+    if isinstance(member, discord.abc.User):
+        return get_lang_for_user(member)
+    return getattr(Config, "DEFAULT_LANG", "en")
 
 
 @bot.event

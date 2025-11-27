@@ -12,6 +12,7 @@ from database.service import (
 )
 from database.models import User
 from dms.localization import t
+from utils.lang import get_lang_for_member, get_lang_for_user
 
 STATUSES = ["pending", "ready", "done", "rejected"]
 
@@ -21,8 +22,7 @@ def _lang_from_member(member: discord.Member | None) -> str:
     default_lang = getattr(Config, "DEFAULT_LANG", "en")
     if member is None:
         return default_lang
-    user = get_or_create_user_from_member(member)
-    return user.language or default_lang
+    return get_lang_for_member(member)
 
 
 class RecruitCommands(commands.Cog):
