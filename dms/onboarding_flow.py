@@ -577,7 +577,18 @@ class LanguageButton(discord.ui.Button):
             except discord.DiscordException:
                 return
 
-        await send_main_menu_dm(bot=view.bot, member=member, lang=self.code)
+        try:
+            await send_main_menu_dm(bot=view.bot, member=member, lang=self.code)
+        except discord.Forbidden:
+            try:
+                await interaction.followup.send(
+                    t(self.code, "onboarding_dm_failed_self"),
+                    ephemeral=True,
+                )
+            except discord.InteractionResponded:
+                pass
+        except Exception as e:
+            print(f"[LanguageSelect ERROR] {type(e).__name__}: {e}", file=sys.stderr)
 
 
 # ------------ DM HELPERS ------------
