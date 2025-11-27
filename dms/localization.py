@@ -6,6 +6,7 @@ LANGS = {
         "roles_header": "Available server roles:",
         "roles_hint": "Press role buttons below to assign them instantly.",
         "bot_description": "ARMA 3 Community Discord Bot",
+
         "recruit_hint": (
             "To register as an ARMA 3 recruit:\n"
             "→ Press the green 'Register as Recruit' button."
@@ -18,11 +19,13 @@ LANGS = {
             "3) In the URL, there will be a long number at the end – this is your SteamID64.\n\n"
             "Press the **Link Steam ID** button below and paste this number into the form."
         ),
+
         "language_set": "Language set: EN",
         "choose_language": "Choose your language:",
         "language_name_en": "English",
         "language_name_ru": "Russian",
         "language_name_uk": "Ukrainian",
+
         "onboarding_guild_only": "This command must be used in a server channel, not in DMs.",
         "onboarding_dm_sent_self": "Onboarding DM has been sent to you.",
         "onboarding_dm_failed_self": (
@@ -30,6 +33,7 @@ LANGS = {
         ),
         "onboarding_dm_sent_other": "Onboarding DM has been sent to {member}.",
         "onboarding_dm_failed_other": "I couldn't DM {member}. Their DMs may still be disabled.",
+
         "steam_link": (
             "⚠️ You must link your Steam ID before applying as a recruit.\n\n"
             "Use the button below and enter your 17-digit SteamID64."
@@ -40,10 +44,19 @@ LANGS = {
             "\"Copy Page URL\" → take the long number at the end."
         ),
         "steam_saved": "Steam ID **{steam_id}** saved. Thank you!",
+
+        "steam_modal_title": "Link your Steam ID",
+        "steam_modal_label": "Your Steam ID / SteamID64",
+        "steam_modal_placeholder": "Example: 7656119XXXXXXXXXX",
+        "steam_modal_wrong_user": "This form is bound to another user.",
+        "steam_modal_error": "Internal error while saving Steam ID. Contact staff.",
+
         "ping_title": "Pong!",
         "ping_description": "Bot latency: **{latency}ms**",
+
         "role_default_label": "Role",
         "role_with_description": "{mention} - {desc}",
+
         "info_title": "Bot Information",
         "info_description": "ARMA 3 Community Discord Bot",
         "info_field_bot": "Bot",
@@ -53,7 +66,9 @@ LANGS = {
         "info_uptime_value": "{hours}h {minutes}m {seconds}s",
         "info_field_python_version": "Python Version",
         "info_field_discordpy_version": "discord.py Version",
+
         "requested_by": "Requested by {requester}",
+
         "serverinfo_title": "Server Information: {name}",
         "serverinfo_owner": "Owner",
         "serverinfo_members": "Members",
@@ -62,7 +77,10 @@ LANGS = {
         "serverinfo_roles": "Roles",
         "serverinfo_id": "Server ID",
         "serverinfo_created_at": "Created At",
+
         "unknown_value": "Unknown",
+        "value_unknown": "Unknown",
+
         "userinfo_title": "User Information",
         "userinfo_name": "Name",
         "userinfo_nickname": "Nickname",
@@ -73,11 +91,14 @@ LANGS = {
         "userinfo_created": "Account Created",
         "userinfo_roles_title": "Roles [{count}]",
         "roles_count_only": "{count} roles",
+
         "avatar_title": "{name}'s Avatar",
         "avatar_download_links": "Download Links",
         "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
         "avatar_no_custom": "This user has no custom avatar.",
+
         "say_nothing_to_send": "Nothing to send.",
+
         "recruit_channels_error": (
             "Recruit role assigned, but interview channels could not be created. "
             "Please contact staff."
@@ -96,6 +117,7 @@ LANGS = {
             "- Text: {text}\n"
             "- Voice: {voice}"
         ),
+
         "recruit_embed_title": "Recruit {name} ready for interview",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
         "recruit_embed_field_code": "Recruit code",
@@ -106,40 +128,45 @@ LANGS = {
         "recruit_embed_field_language": "Language",
         "recruit_embed_field_status": "Status",
         "recruit_embed_footer_interview": "Use this channel to schedule and run the interview.",
+
         "recruit_info_title": "Recruit info",
         "recruit_field_text_channel": "Text channel",
         "recruit_field_voice_channel": "Voice channel",
-        "value_unknown": "Unknown",
+
         "recruits_unknown_status": "Unknown status. Use: pending / ready / done / rejected.",
         "recruits_none_with_status": "No recruits with status **{status}**.",
         "recruits_with_status_title": "Recruits with status {status}",
         "recruits_overview_title": "Recruits overview",
         "recruits_overview_none": "_none_",
+
         "user_not_in_guild": "User is not a member of this guild.",
         "user_synced": (
             "User `{target}` synced.\n"
             "discord_id={discord_id}, username=`{username}`, "
             "display_name=`{display_name}`, is_admin={is_admin}"
         ),
-        "command_guild_only": "This command can only be used in a guild.",
         "user_updates_done": "Updated {updated} users from guild `{guild}`.",
+
+        "command_guild_only": "This command can only be used in a guild.",
         "command_not_found": "Command not found. Use `{prefix}help` to see available commands.",
         "missing_permissions": "You do not have permission to use this command.",
         "missing_required_argument": "Missing required argument: {param}",
         "bad_argument": "Bad argument: {error}",
         "command_on_cooldown": "This command is on cooldown. Try again in {retry_after:.2f}s",
         "error_generic": "An error occurred while executing the command.",
-        "help_title": "Справка • ARMA 3 Bot",
+
+        "help_title": "Help • ARMA 3 Bot",
         "help_description": (
             "Available commands by category.\n"
             "Use `{prefix}help <command>` to see details."
         ),
-        "help_admin_commands": "🔒 Команды администраторов",
+        "help_admin_commands": "🔒 Admin commands",
         "help_general_category": "General",
         "help_command_line": "`{signature}` — {description}",
         "help_command_title": "Command: {signature}",
         "help_category_title": "Category: {name}",
         "no_description": "No description.",
+
         "help_desc_ping": "Check the bot's latency.",
         "help_desc_info": "Show information about the bot.",
         "help_desc_serverinfo": "Show information about the current server.",
@@ -159,20 +186,18 @@ LANGS = {
         "help_desc_clear": "Delete multiple recent messages.",
         "help_desc_mute": "Timeout (mute) a member for a duration.",
         "help_desc_unmute": "Remove timeout from a member.",
-        "steam_modal_title": "Link your Steam ID",
-        "steam_modal_label": "Your Steam ID / SteamID64",
-        "steam_modal_placeholder": "Example: 7656119XXXXXXXXXX",
-        "steam_modal_wrong_user": "This form is bound to another user.",
-        "steam_modal_error": "Internal error while saving Steam ID. Contact staff.",
+
         "btn_yes": "Yes",
         "btn_no": "No",
         "btn_approve": "Approve",
         "btn_deny": "Deny",
+
         "mod_cannot_target_self_kick": "🚫 You cannot kick yourself!",
         "mod_cannot_target_self_ban": "🚫 You cannot ban yourself!",
         "mod_cannot_target_self_mute": "🚫 You cannot mute yourself!",
         "mod_cannot_target_higher": "🚫 You cannot target someone with a higher or equal role!",
         "mod_bot_cannot_target_higher": "🚫 I cannot target someone with a higher or equal role than me!",
+
         "mod_kick_title": "🔨 Member Kicked",
         "mod_kick_description": "{member} has been kicked from the server.",
         "mod_ban_title": "⛔ Member Banned",
@@ -183,6 +208,7 @@ LANGS = {
         "mod_mute_description": "{member} has been muted.",
         "mod_unmute_title": "🔈 Member Unmuted",
         "mod_unmute_description": "{member} has been unmuted.",
+
         "mod_reason": "Reason",
         "mod_moderator": "Moderator",
         "mod_user_id": "User ID: {user_id}",
@@ -199,8 +225,10 @@ LANGS = {
         "mod_duration_minutes": "{minutes} minutes",
         "mod_error_generic": "🚫 An error occurred: {error}",
         "mod_user_not_found_or_not_banned": "🚫 User not found or not banned.",
+
         "recruit_category_not_configured": "Recruit category is not configured correctly.",
         "recruit_not_found_server": "Recruit not found on the server.",
+
         "recruit_moderation_missing_steam": (
             "This recruit has not linked their **SteamID64** yet.\n\n"
             "Ask them to open their DMs with the bot and press the "
@@ -229,6 +257,7 @@ LANGS = {
         "recruit_moderation_confirm_yes": "Approved.",
         "recruit_moderation_confirm_no": "Cancelled.",
         "recruit_moderation_denied_label": "Denied.",
+
         "recruit_already_applied": (
             "You have already applied as a recruit. "
             "If something seems wrong, contact the staff."
@@ -246,6 +275,7 @@ LANGS = {
             "I cannot grant the recruit role. "
             "Please contact the staff; I may be missing permissions."
         ),
+
         "game_role_not_found": "Configured role not found on server.",
         "no_permission_manage_roles": "I don't have permission to manage your roles.",
 
@@ -302,10 +332,12 @@ LANGS = {
         "arma_role_not_found": "This ARMA role is not configured or no longer exists.",
         "arma_role_added": "ARMA role **{role}** has been assigned.",
         "arma_role_removed": "ARMA role **{role}** has been removed.",
+
         "notify_dm_disabled": (
             "{member}, enable direct messages so I can send your onboarding instructions. "
             "After this, please send the `{command}` command on the server."
         ),
+
         "presence_help_hint": "{prefix}help | ARMA 3",
         "member_left_server": "{name} has left the server.",
         "recruit_auto_granted": (
@@ -313,11 +345,13 @@ LANGS = {
             "To complete your registration, please link your SteamID64.\n"
             "Press the button below and fill in the form."
         ),
+
         "welcome_message_default": (
             "Welcome to the ARMA 3 tactical community. We focus on coordination, discipline, "
             "and joint operations. Before we deploy, please choose your roles and register as a "
             "recruit so the staff can learn your interests and prepare you for upcoming missions."
         ),
+
         "config_game_role_arma3_label": "ARMA 3",
         "config_game_role_arma3_description": "Tactical military simulation game.",
         "config_game_role_squad_label": "Squad",
@@ -328,6 +362,7 @@ LANGS = {
         "config_game_role_minecraft_description": "Sandbox construction and survival game.",
         "config_game_role_rust_label": "Rust",
         "config_game_role_rust_description": "Survival game set in a post-apocalyptic world.",
+
         "config_arma_role_squad_leader_label": "Squad Leader",
         "config_arma_role_squad_leader_description": (
             "Leads the squad, coordinates movement and communication."
@@ -358,6 +393,7 @@ LANGS = {
         "config_arma_role_engineer_description": (
             "Handles explosives, repairs vehicles, performs technical tasks."
         ),
+
         "role_def_assault_label": "Assault",
         "role_def_assault_description": "Frontline infantry focused on direct engagements.",
         "role_def_medic_label": "Medic",
@@ -368,13 +404,16 @@ LANGS = {
         ),
         "role_def_support_label": "Support",
         "role_def_support_description": "Handles vehicles, heavy weapons, and resupply.",
+
         "missing_discord_token_env": "DISCORD_TOKEN is not set in .env file",
     },
+
     "ru": {
         "greeting": "Привет, {name}!",
         "roles_header": "Доступные роли на сервере:",
         "roles_hint": "Нажмите на кнопки ролей ниже, чтобы выдать их себе.",
         "bot_description": "Discord-бот сообщества ARMA 3",
+
         "recruit_hint": (
             "Чтобы зарегистрироваться рекрутом ARMA 3:\n"
             "→ Нажмите зелёную кнопку «Register as Recruit»."
@@ -387,11 +426,13 @@ LANGS = {
             "3) В конце ссылки будет длинное число — это ваш SteamID64.\n\n"
             "Нажмите кнопку **Link Steam ID** ниже и вставьте это число в форму."
         ),
+
         "language_set": "Язык установлен: RU",
         "choose_language": "Выберите язык:",
         "language_name_en": "Английский",
         "language_name_ru": "Русский",
         "language_name_uk": "Украинский",
+
         "onboarding_guild_only": "Эту команду нужно использовать в канале сервера, а не в личных сообщениях.",
         "onboarding_dm_sent_self": "Онбординг-сообщение отправлено вам в личку.",
         "onboarding_dm_failed_self": (
@@ -399,6 +440,7 @@ LANGS = {
         ),
         "onboarding_dm_sent_other": "Онбординг-сообщение отправлено {member}.",
         "onboarding_dm_failed_other": "Не удалось написать {member} в личные сообщения. Их ЛС, возможно, отключены.",
+
         "steam_link": (
             "⚠️ Перед тем как подать заявку рекрута, нужно привязать Steam ID.\n\n"
             "Используй кнопку ниже и введи свой 17-значный SteamID64."
@@ -409,9 +451,19 @@ LANGS = {
             "«Копировать URL-адрес» → возьмите длинное число в конце."
         ),
         "steam_saved": "Steam ID **{steam_id}** сохранён. Спасибо!",
+
+        "steam_modal_title": "Привяжите Steam ID",
+        "steam_modal_label": "Ваш Steam ID / SteamID64",
+        "steam_modal_placeholder": "Пример: 7656119XXXXXXXXXX",
+        "steam_modal_wrong_user": "Эта форма привязана к другому пользователю.",
+        "steam_modal_error": "Внутренняя ошибка при сохранении Steam ID. Обратитесь к персоналу.",
+
         "ping_title": "Понг!",
         "ping_description": "Задержка бота: **{latency} мс**",
+
         "role_default_label": "Роль",
+        "role_with_description": "{mention} - {desc}",
+
         "info_title": "Информация о боте",
         "info_description": "Discord-бот сообщества ARMA 3",
         "info_field_bot": "Бот",
@@ -421,7 +473,9 @@ LANGS = {
         "info_uptime_value": "{hours}ч {minutes}м {seconds}с",
         "info_field_python_version": "Версия Python",
         "info_field_discordpy_version": "Версия discord.py",
+
         "requested_by": "Запрошено пользователем {requester}",
+
         "serverinfo_title": "Информация о сервере: {name}",
         "serverinfo_owner": "Владелец",
         "serverinfo_members": "Участники",
@@ -430,7 +484,10 @@ LANGS = {
         "serverinfo_roles": "Роли",
         "serverinfo_id": "ID сервера",
         "serverinfo_created_at": "Создан",
+
         "unknown_value": "Неизвестно",
+        "value_unknown": "Неизвестно",
+
         "userinfo_title": "Информация о пользователе",
         "userinfo_name": "Имя",
         "userinfo_nickname": "Никнейм",
@@ -441,11 +498,14 @@ LANGS = {
         "userinfo_created": "Аккаунт создан",
         "userinfo_roles_title": "Роли [{count}]",
         "roles_count_only": "{count} ролей",
+
         "avatar_title": "Аватар пользователя {name}",
         "avatar_download_links": "Ссылки для скачивания",
         "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
         "avatar_no_custom": "У этого пользователя нет собственного аватара.",
+
         "say_nothing_to_send": "Нет текста для отправки.",
+
         "recruit_channels_error": (
             "Роль рекрута выдана, но не удалось создать каналы для собеседования. "
             "Свяжитесь с персоналом."
@@ -464,122 +524,44 @@ LANGS = {
             "- Текст: {text}\n"
             "- Голос: {voice}"
         ),
+
         "recruit_embed_title": "Рекрут {name} готов к собеседованию",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
         "recruit_embed_field_code": "Код рекрута",
         "recruit_embed_field_discord": "Discord",
         "recruit_embed_field_steam": "Steam",
         "recruit_embed_steam_not_linked": "Не привязан",
+        "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
         "recruit_embed_field_language": "Язык",
         "recruit_embed_field_status": "Статус",
         "recruit_embed_footer_interview": "Используйте этот канал, чтобы назначить и провести собеседование.",
-        "recruit_already_applied": (
-            "Ты уже подал заявку как рекрут. "
-            "Если что-то не так, напиши рекрутёрам или модераторам."
-        ),
-        "recruit_role_not_configured": (
-            "ID роли рекрута настроен некорректно. "
-            "Сообщи, пожалуйста, администрации сервера."
-        ),
-        "recruit_role_not_found": (
-            "Роль рекрута не найдена на сервере. "
-            "Сообщи, пожалуйста, администрации сервера."
-        ),
-        "recruit_already_has_role": "Ты уже зарегистрирован как рекрут.",
-        "recruit_cannot_grant_role": (
-            "Я не могу выдать роль рекрута. "
-            "Похоже, не хватает прав. Обратись к администрации."
-        ),
-        "game_role_not_found": "Настроенная игровая роль не найдена на сервере.",
-        "no_permission_manage_roles": "У меня нет прав управлять твоими ролями.",
 
-        # Новый онбординг
-        "onboarding_title": "Добро пожаловать в наше тактическое сообщество ARMA 3",
-        "onboarding_body": (
-            "Мы делаем упор на координацию, дисциплину и совместные операции.\n"
-            "Используйте кнопки ниже, чтобы настроить свой профиль:"
-        ),
-        "btn_games": "Игровые роли",
-        "btn_recruit": "Стать рекрутом",
-        "btn_steam": "Привязать Steam ID",
-
-        # Игровые роли
-        "game_roles_title": "Выбор игровых ролей",
-        "game_roles_body": "Нажимайте на кнопки, чтобы получить или снять роль.",
-        "game_role_added": "Роль **{role}** выдана.",
-        "game_role_removed": "Роль **{role}** снята.",
-        "no_game_roles": "Игровые роли ещё не настроены.",
-
-        "game_roles_panel_title": "Игровые роли",
-        "game_roles_panel_body": (
-            "Нажми кнопку ниже, чтобы открыть меню игровых ролей.\n"
-            "В нём можно включать и отключать роли по кнопкам."
-        ),
-
-        # Ошибки
-        "guild_not_found": "Сервер не найден. Обратись к администрации.",
-        "not_in_guild": "Я не могу найти тебя на сервере. Перезайди или напиши модераторам.",
-
-        "role_panel_title": "Панель ролей",
-        "role_panel_body": (
-            "Здесь можно выбрать игровые роли, специализации для АРМА-операций "
-            "и запустить процесс рекрутинга."
-        ),
-        "role_panel_games_header": "Игровые роли",
-        "role_panel_arma_header": "Роли для АРМА-операций",
-
-        "btn_games_panel": "Получить роль игры",
-        "btn_arma_panel": "Получить роль по АРМЕ",
-
-        "no_roles_configured": "В конфиге бота не настроены роли.",
-        "no_arma_roles": "Роли для АРМА-операций не настроены.",
-
-        "arma_roles_title": "Роли для АРМА-операций",
-        "arma_roles_body": (
-            "Эти роли доступны только одобренным рекрутам (статус DONE).\n"
-            "Используются для обозначения желаемой роли на операциях."
-        ),
-        "arma_roles_not_done": (
-            "Роли по АРМА-должностям доступны только рекрутам со статусом **DONE**.\n"
-            "Сначала завершите рекрут-процесс, затем вернитесь к этой панели."
-        ),
-        "arma_role_not_found": "Эта роль для АРМА-операций не настроена или была удалена.",
-        "arma_role_added": "Роль для АРМА-операций **{role}** выдана.",
-        "arma_role_removed": "Роль для АРМА-операций **{role}** снята.",
-        "notify_dm_disabled": (
-            "{member}, включите личные сообщения, чтобы я мог отправить инструкции по онбордингу. "
-            "После этого отправьте команду `{command}` на сервере."
-        ),
-        "presence_help_hint": "{prefix}help | ARMA 3",
-        "member_left_server": "{name} покинул сервер.",
-        "recruit_auto_granted": (
-            "Вам выдали роль **Recruit**.\n\n"
-            "Чтобы завершить регистрацию, привяжите ваш SteamID64.\n"
-            "Нажмите кнопку ниже и заполните форму."
-        ),
         "recruit_info_title": "Информация о рекруте",
         "recruit_field_text_channel": "Текстовый канал",
         "recruit_field_voice_channel": "Голосовой канал",
-        "value_unknown": "Неизвестно",
+
         "recruits_unknown_status": "Неизвестный статус. Используйте: pending / ready / done / rejected.",
         "recruits_none_with_status": "Нет рекрутов со статусом **{status}**.",
         "recruits_with_status_title": "Рекруты со статусом {status}",
         "recruits_overview_title": "Сводка по рекрутам",
         "recruits_overview_none": "_нет_",
+
         "user_not_in_guild": "Пользователь не является участником этого сервера.",
         "user_synced": (
             "Пользователь `{target}` синхронизирован.\n"
             "discord_id={discord_id}, username=`{username}`, "
             "display_name=`{display_name}`, is_admin={is_admin}"
         ),
-        "command_guild_only": "Эту команду можно использовать только на сервере.",
         "user_updates_done": "Обновлено {updated} пользователей из сервера `{guild}`.",
+
+        "command_guild_only": "Эту команду можно использовать только на сервере.",
         "command_not_found": "Команда не найдена. Используйте `{prefix}help`, чтобы увидеть список команд.",
         "missing_permissions": "У вас нет прав использовать эту команду.",
         "missing_required_argument": "Отсутствует обязательный аргумент: {param}",
         "bad_argument": "Некорректный аргумент: {error}",
         "command_on_cooldown": "Эта команда на кулдауне. Попробуйте через {retry_after:.2f} сек.",
         "error_generic": "Произошла ошибка при выполнении команды.",
+
         "help_title": "Справка • ARMA 3 Bot",
         "help_description": (
             "Доступные команды по категориям.\n"
@@ -591,6 +573,7 @@ LANGS = {
         "help_command_title": "Команда: {signature}",
         "help_category_title": "Категория: {name}",
         "no_description": "Описание отсутствует.",
+
         "help_desc_ping": "Проверить задержку бота.",
         "help_desc_info": "Показать информацию о боте.",
         "help_desc_serverinfo": "Показать информацию о текущем сервере.",
@@ -610,20 +593,18 @@ LANGS = {
         "help_desc_clear": "Удалить несколько последних сообщений.",
         "help_desc_mute": "Выдать тайм-аут (мьют) участнику на время.",
         "help_desc_unmute": "Снять тайм-аут с участника.",
-        "steam_modal_title": "Привяжите Steam ID",
-        "steam_modal_label": "Ваш Steam ID / SteamID64",
-        "steam_modal_placeholder": "Пример: 7656119XXXXXXXXXX",
-        "steam_modal_wrong_user": "Эта форма привязана к другому пользователю.",
-        "steam_modal_error": "Внутренняя ошибка при сохранении Steam ID. Обратитесь к персоналу.",
+
         "btn_yes": "Да",
         "btn_no": "Нет",
         "btn_approve": "Одобрить",
         "btn_deny": "Отклонить",
+
         "mod_cannot_target_self_kick": "🚫 Нельзя кикнуть себя.",
         "mod_cannot_target_self_ban": "🚫 Нельзя забанить себя.",
         "mod_cannot_target_self_mute": "🚫 Нельзя замьютить себя.",
         "mod_cannot_target_higher": "🚫 Нельзя действовать на того, у кого выше или равная роль.",
         "mod_bot_cannot_target_higher": "🚫 Я не могу действовать на пользователя с ролью выше или равной моей.",
+
         "mod_kick_title": "🔨 Участник кикнут",
         "mod_kick_description": "{member} был кикнут с сервера.",
         "mod_ban_title": "⛔ Участник забанен",
@@ -634,6 +615,7 @@ LANGS = {
         "mod_mute_description": "{member} был замьючен.",
         "mod_unmute_title": "🔈 Участник размьючен",
         "mod_unmute_description": "{member} был размьючен.",
+
         "mod_reason": "Причина",
         "mod_moderator": "Модератор",
         "mod_user_id": "ID пользователя: {user_id}",
@@ -650,9 +632,10 @@ LANGS = {
         "mod_duration_minutes": "{minutes} минут",
         "mod_error_generic": "🚫 Произошла ошибка: {error}",
         "mod_user_not_found_or_not_banned": "🚫 Пользователь не найден или не забанен.",
-        "role_with_description": "{mention} - {desc}",
+
         "recruit_category_not_configured": "Категория для рекрутов настроена некорректно.",
         "recruit_not_found_server": "Рекрут не найден на сервере.",
+
         "recruit_moderation_missing_steam": (
             "Этот рекрут ещё не привязал свой **SteamID64**.\n\n"
             "Попросите его открыть личные сообщения с ботом и нажать кнопку "
@@ -681,7 +664,21 @@ LANGS = {
         "recruit_moderation_confirm_yes": "Одобрено.",
         "recruit_moderation_confirm_no": "Отменено.",
         "recruit_moderation_denied_label": "Отклонено.",
+
         "recruit_embed_steam_not_linked_bilingual": "Не привязан / Not linked",
+
+        # Онбординг / presence / прочее
+        "notify_dm_disabled": (
+            "{member}, включите личные сообщения, чтобы я мог отправить инструкции по онбордингу. "
+            "После этого отправьте команду `{command}` на сервере."
+        ),
+        "presence_help_hint": "{prefix}help | ARMA 3",
+        "member_left_server": "{name} покинул сервер.",
+        "recruit_auto_granted": (
+            "Вам выдали роль **Recruit**.\n\n"
+            "Чтобы завершить регистрацию, привяжите ваш SteamID64.\n"
+            "Нажмите кнопку ниже и заполните форму."
+        ),
 
         "welcome_message_default": (
             "Добро пожаловать в тактическое сообщество ARMA 3. Мы уделяем внимание "
@@ -689,6 +686,8 @@ LANGS = {
             "выберите роли и зарегистрируйтесь как рекрут, чтобы рекрутеры могли узнать ваши "
             "интересы и подготовить вас к предстоящим миссиям."
         ),
+
+        # Роли и конфиг
         "config_game_role_arma3_label": "ARMA 3",
         "config_game_role_arma3_description": "Тактический военный симулятор.",
         "config_game_role_squad_label": "Squad",
@@ -699,6 +698,7 @@ LANGS = {
         "config_game_role_minecraft_description": "Песочница про строительство и выживание.",
         "config_game_role_rust_label": "Rust",
         "config_game_role_rust_description": "Выживание в постапокалиптическом мире.",
+
         "config_arma_role_squad_leader_label": "Командир отделения",
         "config_arma_role_squad_leader_description": (
             "Ведет отделение, координирует перемещения и связь."
@@ -731,6 +731,7 @@ LANGS = {
         "config_arma_role_engineer_description": (
             "Работает со взрывчаткой, ремонтирует технику, решает технические задачи."
         ),
+
         "role_def_assault_label": "Штурм",
         "role_def_assault_description": (
             "Линейная пехота, сфокусированная на прямых столкновениях."
@@ -747,13 +748,16 @@ LANGS = {
         "role_def_support_description": (
             "Работает с техникой, тяжелым вооружением и снабжением."
         ),
+
         "missing_discord_token_env": "DISCORD_TOKEN не указан в файле .env",
     },
+
     "uk": {
         "greeting": "Привіт, {name}!",
         "roles_header": "Доступні ролі на сервері:",
         "roles_hint": "Натисніть на кнопки ролей нижче, щоб видати їх собі.",
         "bot_description": "Discord-бот спільноти ARMA 3",
+
         "recruit_hint": (
             "Щоб зареєструватися рекрутом ARMA 3:\n"
             "→ Натисніть зелену кнопку «Register as Recruit»."
@@ -766,11 +770,13 @@ LANGS = {
             "3) Наприкінці посилання буде довге число — це ваш SteamID64.\n\n"
             "Натисніть кнопку **Link Steam ID** нижче та вставте це число у форму."
         ),
+
         "language_set": "Мову встановлено: UA",
         "choose_language": "Оберіть мову:",
         "language_name_en": "Англійська",
         "language_name_ru": "Російська",
         "language_name_uk": "Українська",
+
         "onboarding_guild_only": "Цю команду потрібно використовувати в каналі сервера, а не у приватних повідомленнях.",
         "onboarding_dm_sent_self": "Онбординг-повідомлення надіслано вам у приват.",
         "onboarding_dm_failed_self": (
@@ -778,6 +784,7 @@ LANGS = {
         ),
         "onboarding_dm_sent_other": "Онбординг-повідомлення надіслано {member}.",
         "onboarding_dm_failed_other": "Не вдалося написати {member} у приват. Їхні ДМ, можливо, вимкнені.",
+
         "steam_link": (
             "⚠️ Перед тим як подати заявку рекрута, потрібно прив’язати Steam ID.\n\n"
             "Скористайся кнопкою нижче й введи свій 17-значний SteamID64."
@@ -788,9 +795,19 @@ LANGS = {
             "«Копіювати URL-адресу» → візьміть довге число в кінці."
         ),
         "steam_saved": "Steam ID **{steam_id}** збережено. Дякуємо!",
+
+        "steam_modal_title": "Прив’яжіть Steam ID",
+        "steam_modal_label": "Ваш Steam ID / SteamID64",
+        "steam_modal_placeholder": "Приклад: 7656119XXXXXXXXXX",
+        "steam_modal_wrong_user": "Ця форма прив’язана до іншого користувача.",
+        "steam_modal_error": "Внутрішня помилка під час збереження Steam ID. Зверніться до персоналу.",
+
         "ping_title": "Понг!",
         "ping_description": "Затримка бота: **{latency} мс**",
+
         "role_default_label": "Роль",
+        "role_with_description": "{mention} - {desc}",
+
         "info_title": "Інформація про бота",
         "info_description": "Discord-бот спільноти ARMA 3",
         "info_field_bot": "Бот",
@@ -800,7 +817,9 @@ LANGS = {
         "info_uptime_value": "{hours}г {minutes}хв {seconds}с",
         "info_field_python_version": "Версія Python",
         "info_field_discordpy_version": "Версія discord.py",
+
         "requested_by": "Запрошено користувачем {requester}",
+
         "serverinfo_title": "Інформація про сервер: {name}",
         "serverinfo_owner": "Власник",
         "serverinfo_members": "Учасники",
@@ -809,7 +828,10 @@ LANGS = {
         "serverinfo_roles": "Ролі",
         "serverinfo_id": "ID сервера",
         "serverinfo_created_at": "Створено",
+
         "unknown_value": "Невідомо",
+        "value_unknown": "Невідомо",
+
         "userinfo_title": "Інформація про користувача",
         "userinfo_name": "Ім’я",
         "userinfo_nickname": "Нікнейм",
@@ -820,11 +842,14 @@ LANGS = {
         "userinfo_created": "Аккаунт створено",
         "userinfo_roles_title": "Ролі [{count}]",
         "roles_count_only": "{count} ролей",
+
         "avatar_title": "Аватар користувача {name}",
         "avatar_download_links": "Посилання для завантаження",
         "avatar_download_links_value": "[PNG]({png}) | [JPG]({jpg}) | [WEBP]({webp})",
         "avatar_no_custom": "У цього користувача немає власного аватара.",
+
         "say_nothing_to_send": "Немає тексту для надсилання.",
+
         "recruit_channels_error": (
             "Роль рекрута видана, але не вдалося створити канали для співбесіди. "
             "Зв’яжіться з персоналом."
@@ -843,6 +868,7 @@ LANGS = {
             "- Текст: {text}\n"
             "- Голос: {voice}"
         ),
+
         "recruit_embed_title": "Рекрут {name} готовий до співбесіди",
         "recruit_embed_status_ready": "READY FOR INTERVIEW",
         "recruit_embed_field_code": "Код рекрута",
@@ -853,29 +879,33 @@ LANGS = {
         "recruit_embed_field_language": "Мова",
         "recruit_embed_field_status": "Статус",
         "recruit_embed_footer_interview": "Використовуйте цей канал, щоб призначити й провести співбесіду.",
+
         "recruit_info_title": "Інформація про рекрута",
         "recruit_field_text_channel": "Текстовий канал",
         "recruit_field_voice_channel": "Голосовий канал",
-        "value_unknown": "Невідомо",
+
         "recruits_unknown_status": "Невідомий статус. Використовуйте: pending / ready / done / rejected.",
         "recruits_none_with_status": "Немає рекрутів зі статусом **{status}**.",
         "recruits_with_status_title": "Рекрути зі статусом {status}",
         "recruits_overview_title": "Зведення по рекрутах",
         "recruits_overview_none": "_немає_",
+
         "user_not_in_guild": "Користувач не є учасником цього сервера.",
         "user_synced": (
             "Користувача `{target}` синхронізовано.\n"
             "discord_id={discord_id}, username=`{username}`, "
             "display_name=`{display_name}`, is_admin={is_admin}"
         ),
-        "command_guild_only": "Цю команду можна використовувати лише на сервері.",
         "user_updates_done": "Оновлено {updated} користувачів із сервера `{guild}`.",
+
+        "command_guild_only": "Цю команду можна використовувати лише на сервері.",
         "command_not_found": "Команда не знайдена. Використайте `{prefix}help`, щоб побачити доступні команди.",
         "missing_permissions": "У вас немає прав використовувати цю команду.",
         "missing_required_argument": "Відсутній обов’язковий аргумент: {param}",
         "bad_argument": "Некоректний аргумент: {error}",
         "command_on_cooldown": "Ця команда на кулдауні. Спробуйте через {retry_after:.2f} сек.",
         "error_generic": "Сталася помилка під час виконання команди.",
+
         "help_title": "Довідка • ARMA 3 Bot",
         "help_description": (
             "Доступні команди за категоріями.\n"
@@ -887,6 +917,7 @@ LANGS = {
         "help_command_title": "Команда: {signature}",
         "help_category_title": "Категорія: {name}",
         "no_description": "Опис відсутній.",
+
         "help_desc_ping": "Перевірити затримку бота.",
         "help_desc_info": "Показати інформацію про бота.",
         "help_desc_serverinfo": "Показати інформацію про поточний сервер.",
@@ -906,21 +937,29 @@ LANGS = {
         "help_desc_clear": "Видалити кілька останніх повідомлень.",
         "help_desc_mute": "Видати тайм-аут (м’ют) учаснику на час.",
         "help_desc_unmute": "Зняти тайм-аут з учасника.",
+
+        "btn_yes": "Так",
+        "btn_no": "Ні",
+        "btn_approve": "Схвалити",
+        "btn_deny": "Відхилити",
+
         "mod_cannot_target_self_kick": "🚫 Не можна кікнути себе.",
         "mod_cannot_target_self_ban": "🚫 Не можна забанити себе.",
         "mod_cannot_target_self_mute": "🚫 Не можна зам’ютити себе.",
         "mod_cannot_target_higher": "🚫 Не можна діяти на того, хто має вищу або рівну роль.",
         "mod_bot_cannot_target_higher": "🚫 Я не можу діяти на користувача з роллю вищою або рівною моїй.",
+
         "mod_kick_title": "🔨 Учасника кікнуто",
         "mod_kick_description": "{member} було кікнуто з сервера.",
         "mod_ban_title": "⛔ Учасника забанено",
         "mod_ban_description": "{member} було забанено на сервері.",
         "mod_unban_title": "✅ Користувача розбанено",
         "mod_unban_description": "{user} ({name}) було розбанено.",
-        "mod_mute_title": "🔇 Учасника зам’ючено",
-        "mod_mute_description": "{member} було зам’ючено.",
-        "mod_unmute_title": "🔈 Учасника розм’ючено",
-        "mod_unmute_description": "{member} було розм’ючено.",
+        "mod_mute_title": "🔇 Учасника зам’ютовано",
+        "mod_mute_description": "{member} було зам’ютовано.",
+        "mod_unmute_title": "🔈 Учасника розм’ютовано",
+        "mod_unmute_description": "{member} було розм’ютовано.",
+
         "mod_reason": "Причина",
         "mod_moderator": "Модератор",
         "mod_user_id": "ID користувача: {user_id}",
@@ -937,8 +976,10 @@ LANGS = {
         "mod_duration_minutes": "{minutes} хвилин",
         "mod_error_generic": "🚫 Сталася помилка: {error}",
         "mod_user_not_found_or_not_banned": "🚫 Користувача не знайдено або не забанено.",
+
         "recruit_category_not_configured": "Категорію для рекрутів налаштовано некоректно.",
         "recruit_not_found_server": "Рекрут не знайдений на сервері.",
+
         "recruit_moderation_missing_steam": (
             "Цей рекрут ще не прив’язав свій **SteamID64**.\n\n"
             "Попросіть його відкрити приватні повідомлення з ботом і натиснути кнопку "
@@ -967,23 +1008,89 @@ LANGS = {
         "recruit_moderation_confirm_yes": "Схвалено.",
         "recruit_moderation_confirm_no": "Скасовано.",
         "recruit_moderation_denied_label": "Відхилено.",
-        "recruit_already_applied": (
-            "Ти вже подав заявку як рекрут. "
-            "Якщо щось не так, напиши рекрутерам або модераторам."
+
+        # Onboarding / presence / misc
+        "notify_dm_disabled": (
+            "{member}, увімкніть приватні повідомлення, щоб я міг надіслати інструкції по онбордингу. "
+            "Після цього надішліть команду `{command}` на сервері."
         ),
-        "recruit_role_not_configured": (
-            "ID ролі рекрута налаштовано некоректно. "
-            "Повідом, будь ласка, адміністрації сервера."
+        "presence_help_hint": "{prefix}help | ARMA 3",
+        "member_left_server": "{name} вийшов із сервера.",
+        "recruit_auto_granted": (
+            "Вам видали роль **Recruit**.\n\n"
+            "Щоб завершити реєстрацію, прив’яжіть ваш SteamID64.\n"
+            "Натисніть кнопку нижче та заповніть форму."
         ),
-        "recruit_role_not_found": (
-            "Роль рекрута не знайдена на сервері. "
-            "Повідом, будь ласка, адміністрації сервера."
+
+        "welcome_message_default": (
+            "Ласкаво просимо до тактичної спільноти ARMA 3. Ми робимо акцент на "
+            "координації, дисципліні та спільних операціях. Перш ніж розпочати, "
+            "оберіть ролі та зареєструйтеся як рекрут, щоб рекрутери могли дізнатися про ваші "
+            "інтереси та підготувати вас до майбутніх місій."
         ),
-        "recruit_already_has_role": "Ти вже зареєстрований як рекрут.",
-        "recruit_cannot_grant_role": (
-            "Я не можу видати роль рекрута. "
-            "Схоже, не вистачає прав. Звернись до адміністрації."
+
+        # Roles / config
+        "config_game_role_arma3_label": "ARMA 3",
+        "config_game_role_arma3_description": "Тактичний військовий симулятор.",
+        "config_game_role_squad_label": "Squad",
+        "config_game_role_squad_description": "Командний військовий шутер від першої особи.",
+        "config_game_role_csgo_label": "CS GO",
+        "config_game_role_csgo_description": "Змагальний шутер від першої особи.",
+        "config_game_role_minecraft_label": "Minecraft",
+        "config_game_role_minecraft_description": "Пісочниця про будівництво та виживання.",
+        "config_game_role_rust_label": "Rust",
+        "config_game_role_rust_description": "Виживання в постапокаліптичному світі.",
+
+        "config_arma_role_squad_leader_label": "Командир відділення",
+        "config_arma_role_squad_leader_description": (
+            "Очолює відділення, координує переміщення та зв’язок."
         ),
+        "config_arma_role_team_leader_label": "Командир ланки",
+        "config_arma_role_team_leader_description": (
+            "Керує ланкою під час бойового контакту."
+        ),
+        "config_arma_role_rifleman_label": "Стрілець",
+        "config_arma_role_rifleman_description": (
+            "Базова піхотна роль, основна вогнева сила відділення."
+        ),
+        "config_arma_role_medic_label": "Медик",
+        "config_arma_role_medic_description": (
+            "Надає медичну допомогу та стабілізує поранених."
+        ),
+        "config_arma_role_autorifleman_label": "Кулеметник",
+        "config_arma_role_autorifleman_description": (
+            "Веде подавальний вогонь із кулемета."
+        ),
+        "config_arma_role_at_specialist_label": "ПТ-спеціаліст",
+        "config_arma_role_at_specialist_description": (
+            "Застосовує протитанкове озброєння та вражає бронетехніку."
+        ),
+        "config_arma_role_marksman_label": "Маркер / Дальній стрілець",
+        "config_arma_role_marksman_description": (
+            "Уражає цілі на середніх і далеких дистанціях з високою точністю."
+        ),
+        "config_arma_role_engineer_label": "Інженер",
+        "config_arma_role_engineer_description": (
+            "Працює з вибухівкою, ремонтує техніку, виконує технічні завдання."
+        ),
+
+        "role_def_assault_label": "Штурм",
+        "role_def_assault_description": (
+            "Лінійна піхота, сфокусована на прямих зіткненнях."
+        ),
+        "role_def_medic_label": "Медик",
+        "role_def_medic_description": (
+            "Підтримує відділення завдяки медицині та евакуації."
+        ),
+        "role_def_pilot_label": "Пілот",
+        "role_def_pilot_description": (
+            "Забезпечує повітряний транспорт, підтримку з повітря та логістику."
+        ),
+        "role_def_support_label": "Підтримка",
+        "role_def_support_description": (
+            "Працює з технікою, важким озброєнням і забезпеченням."
+        ),
+
         "game_role_not_found": "Налаштовану ігрову роль не знайдено на сервері.",
         "no_permission_manage_roles": "У мене немає прав керувати твоїми ролями.",
 
@@ -1040,10 +1147,8 @@ LANGS = {
         "arma_role_not_found": "Ця роль для ARMA-операцій не налаштована або була видалена.",
         "arma_role_added": "Роль для ARMA-операцій **{role}** видано.",
         "arma_role_removed": "Роль для ARMA-операцій **{role}** знято.",
-        "notify_dm_disabled": (
-            "{member}, увімкніть приватні повідомлення, щоб я міг надіслати інструкції по онбордингу. "
-            "Після цього надішліть команду `{command}` на сервері."
-        ),
+
+        "missing_discord_token_env": "DISCORD_TOKEN не вказано у файлі .env",
     },
 }
 
@@ -1052,9 +1157,3 @@ def t(lang: str, key: str) -> str:
     """Simple translation helper."""
     data = LANGS.get(lang) or LANGS["en"]
     return data.get(key) or LANGS["en"].get(key, key)
-
-
-
-
-
-
