@@ -24,17 +24,19 @@ class RecruitModerationView(discord.ui.View):
         recruit_id: int,
         text_channel_id: int,
         voice_channel_id: int,
+        recruit_lang: str,
     ):
         super().__init__(timeout=30 * 24 * 3600)
         self.guild_id = guild_id
         self.recruit_id = recruit_id
         self.text_channel_id = text_channel_id
         self.voice_channel_id = voice_channel_id
+        self.recruit_lang = recruit_lang
 
         self.message_id: int | None = None
 
-        self.add_item(ApproveRecruitButton())
-        self.add_item(DenyRecruitButton())
+        self.add_item(ApproveRecruitButton(self.recruit_lang))
+        self.add_item(DenyRecruitButton(self.recruit_lang))
 
     async def check_moderator(self, interaction: discord.Interaction) -> bool:
         guild = interaction.guild
@@ -62,6 +64,17 @@ class RecruitModerationView(discord.ui.View):
             return True
 
         return False
+
+    def _get_user_lang(self, interaction: discord.Interaction) -> str:
+        """Return the moderator's preferred language or default."""
+        guild = interaction.guild or interaction.client.get_guild(self.guild_id)
+        if guild:
+            member = guild.get_member(interaction.user.id)
+            if member:
+                db_user = get_or_create_user_from_member(member)
+                if getattr(db_user, "language", None):
+                    return db_user.language
+        return getattr(Config, "DEFAULT_LANG", "en")
 
     async def _archive_or_lock_channels(
         self,
@@ -137,23 +150,28 @@ class RecruitModerationView(discord.ui.View):
     async def process_approve(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.followup.send(t("en", "guild_not_found"), ephemeral=True)
+            mod_lang = self._get_user_lang(interaction)
+            await interaction.followup.send(
+                t(mod_lang, "guild_not_found"), ephemeral=True
+            )
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
+            mod_lang = self._get_user_lang(interaction)
             await interaction.followup.send(
-                t("en", "recruit_not_found_server"),
+                t(mod_lang, "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
-        
+
         db_user = get_or_create_user_from_member(recruit)
-        lang = (db_user.language or "en") if db_user else "en"
+        recruit_lang = (db_user.language or "en") if db_user else "en"
+        mod_lang = self._get_user_lang(interaction)
 
         if not getattr(db_user, "steam_id", None):
             await interaction.followup.send(
-                t(lang, "recruit_moderation_missing_steam"),
+                t(mod_lang, "recruit_moderation_missing_steam"),
                 ephemeral=True,
             )
             return
@@ -184,16 +202,13 @@ class RecruitModerationView(discord.ui.View):
         channel = guild.get_channel(self.text_channel_id)
         if isinstance(channel, discord.TextChannel):
             await channel.send(
-                t(lang, "recruit_moderation_approved_channel").format(
+                t(recruit_lang, "recruit_moderation_approved_channel").format(
                     recruit=recruit.mention,
                     moderator=interaction.user.mention,
                 )
             )
 
-        db_user = get_or_create_user_from_member(recruit)
-        lang = (db_user.language or "en") if db_user else "en"
-
-        msg = t(lang, "recruit_moderation_dm_approved")
+        msg = t(recruit_lang, "recruit_moderation_dm_approved")
 
         try:
             await recruit.send(msg)
@@ -204,20 +219,24 @@ class RecruitModerationView(discord.ui.View):
 
         await self.disable_buttons(interaction)
         await interaction.followup.send(
-            t(lang, "recruit_moderation_approved_followup"),
+            t(mod_lang, "recruit_moderation_approved_followup"),
             ephemeral=True,
         )
 
     async def process_deny(self, interaction: discord.Interaction):
         guild = interaction.guild or interaction.client.get_guild(self.guild_id)
         if guild is None:
-            await interaction.followup.send(t("en", "guild_not_found"), ephemeral=True)
+            mod_lang = self._get_user_lang(interaction)
+            await interaction.followup.send(
+                t(mod_lang, "guild_not_found"), ephemeral=True
+            )
             return
 
         recruit = guild.get_member(self.recruit_id)
         if recruit is None:
+            mod_lang = self._get_user_lang(interaction)
             await interaction.followup.send(
-                t("en", "recruit_not_found_server"),
+                t(mod_lang, "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
@@ -238,9 +257,10 @@ class RecruitModerationView(discord.ui.View):
         )
 
         db_user = get_or_create_user_from_member(recruit)
-        lang = (db_user.language or "en") if db_user else "en"
+        recruit_lang = (db_user.language or "en") if db_user else "en"
+        mod_lang = self._get_user_lang(interaction)
 
-        msg = t(lang, "recruit_moderation_dm_rejected")
+        msg = t(recruit_lang, "recruit_moderation_dm_rejected")
 
         try:
             await recruit.send(msg)
@@ -252,7 +272,7 @@ class RecruitModerationView(discord.ui.View):
         channel = guild.get_channel(self.text_channel_id)
         if isinstance(channel, discord.TextChannel):
             await channel.send(
-                t(lang, "recruit_moderation_rejected_channel").format(
+                t(recruit_lang, "recruit_moderation_rejected_channel").format(
                     recruit=recruit.mention,
                     moderator=interaction.user.mention,
                 )
@@ -260,7 +280,7 @@ class RecruitModerationView(discord.ui.View):
 
         await self.disable_buttons(interaction)
         await interaction.followup.send(
-            t(lang, "recruit_moderation_rejected_followup"),
+            t(mod_lang, "recruit_moderation_rejected_followup"),
             ephemeral=True,
         )
 
@@ -326,9 +346,9 @@ class ConfirmDenyView(discord.ui.View):
 
 
 class ApproveRecruitButton(discord.ui.Button):
-    def __init__(self):
+    def __init__(self, recruit_lang: str):
         super().__init__(
-            label=t(getattr(Config, "DEFAULT_LANG", "en"), "btn_approve"),
+            label=t(recruit_lang, "btn_approve"),
             style=discord.ButtonStyle.success,
             custom_id="recruit_approve",
         )
@@ -338,7 +358,7 @@ class ApproveRecruitButton(discord.ui.Button):
 
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
-                t("en", "recruit_moderation_not_allowed_approve"),
+                t(view._get_user_lang(interaction), "recruit_moderation_not_allowed_approve"),
                 ephemeral=True,
             )
             return
@@ -346,26 +366,27 @@ class ApproveRecruitButton(discord.ui.Button):
         guild = interaction.guild or interaction.client.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
-                t("en", "guild_not_found"), ephemeral=True
+                t(view._get_user_lang(interaction), "guild_not_found"), ephemeral=True
             )
             return
 
         recruit = guild.get_member(view.recruit_id)
         if recruit is None:
             await interaction.response.send_message(
-                t("en", "recruit_not_found_server"),
+                t(view._get_user_lang(interaction), "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
 
         db_user = get_or_create_user_from_member(recruit)
-        lang = (db_user.language or "en") if db_user else "en"
+        recruit_lang = (db_user.language or "en") if db_user else "en"
+        mod_lang = view._get_user_lang(interaction)
 
-        question = t(lang, "recruit_moderation_confirm_approve").format(
+        question = t(mod_lang, "recruit_moderation_confirm_approve").format(
             recruit=recruit.mention
         )
 
-        confirm_view = ConfirmApproveView(parent=view, lang=lang)
+        confirm_view = ConfirmApproveView(parent=view, lang=mod_lang)
 
         await interaction.response.send_message(
             question,
@@ -375,9 +396,9 @@ class ApproveRecruitButton(discord.ui.Button):
 
 
 class DenyRecruitButton(discord.ui.Button):
-    def __init__(self):
+    def __init__(self, recruit_lang: str):
         super().__init__(
-            label=t(getattr(Config, "DEFAULT_LANG", "en"), "btn_deny"),
+            label=t(recruit_lang, "btn_deny"),
             style=discord.ButtonStyle.danger,
             custom_id="recruit_deny",
         )
@@ -387,7 +408,7 @@ class DenyRecruitButton(discord.ui.Button):
 
         if not await view.check_moderator(interaction):
             await interaction.response.send_message(
-                t("en", "recruit_moderation_not_allowed_deny"),
+                t(view._get_user_lang(interaction), "recruit_moderation_not_allowed_deny"),
                 ephemeral=True,
             )
             return
@@ -395,26 +416,27 @@ class DenyRecruitButton(discord.ui.Button):
         guild = interaction.guild or interaction.client.get_guild(view.guild_id)
         if guild is None:
             await interaction.response.send_message(
-                t("en", "guild_not_found"), ephemeral=True
+                t(view._get_user_lang(interaction), "guild_not_found"), ephemeral=True
             )
             return
 
         recruit = guild.get_member(view.recruit_id)
         if recruit is None:
             await interaction.response.send_message(
-                t("en", "recruit_not_found_server"),
+                t(view._get_user_lang(interaction), "recruit_not_found_server"),
                 ephemeral=True,
             )
             return
 
         db_user = get_or_create_user_from_member(recruit)
-        lang = (db_user.language or "en") if db_user else "en"
+        recruit_lang = (db_user.language or "en") if db_user else "en"
+        mod_lang = view._get_user_lang(interaction)
 
-        question = t(lang, "recruit_moderation_confirm_deny").format(
+        question = t(mod_lang, "recruit_moderation_confirm_deny").format(
             recruit=recruit.mention
         )
 
-        confirm_view = ConfirmDenyView(parent=view, lang=lang)
+        confirm_view = ConfirmDenyView(parent=view, lang=mod_lang)
 
         await interaction.response.send_message(
             question,
@@ -508,6 +530,7 @@ async def send_recruit_moderation_embed(
         recruit_id=member.id,
         text_channel_id=text_ch.id,
         voice_channel_id=voice_ch.id,
+        recruit_lang=lang,
     )
 
     try:
