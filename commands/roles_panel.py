@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from config import Config
-from dms.localization import t
+from dms.localization import LANGS, t
 from dms.onboarding_flow import (
     GameRolesView,
     ArmaRolesView,
@@ -14,11 +14,10 @@ from database.service import get_or_create_user_from_member
 from utils.lang import get_lang_for_member, get_lang_for_user
 
 
-def _format_game_roles_short(lang: str) -> str:
-    """Format a short list of game roles with mentions and descriptions."""
-    defs = getattr(Config, "GAME_ROLE_DEFINITIONS", []) or []
+def _render_roles(defs: list[dict], lang: str, empty_text: str) -> str:
+    """Render roles as emoji bullets + bold names + optional descriptions."""
     if not defs:
-        return t(lang, "no_game_roles")
+        return empty_text
 
     lines: list[str] = []
     for cfg in defs:
@@ -32,40 +31,26 @@ def _format_game_roles_short(lang: str) -> str:
         desc_key = "description_ru" if lang == "ru" else "description_en"
         desc = cfg.get(desc_key) or ""
 
-        mention = f"<@&{int(role_id)}>" if role_id else name
+        bullet = cfg.get("emoji") or "•"
+        # Use plain name to avoid cluttering the embed with mentions.
+        display_name = name
+
+        line = f"{bullet} **{display_name}**"
         if desc:
-            lines.append(t(lang, "role_with_description").format(mention=mention, desc=desc))
-        else:
-            lines.append(mention)
+            line += f" — {desc}"
+        lines.append(line)
 
     return "\n".join(lines)
+
+
+def _format_game_roles_short(lang: str) -> str:
+    defs = getattr(Config, "GAME_ROLE_DEFINITIONS", []) or []
+    return _render_roles(defs, lang, t(lang, "no_game_roles"))
 
 
 def _format_arma_roles_short(lang: str) -> str:
-    """Format a short list of ARMA operation roles with mentions and descriptions."""
     defs = getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or []
-    if not defs:
-        return t(lang, "no_arma_roles")
-
-    lines: list[str] = []
-    for cfg in defs:
-        role_id = cfg.get("id")
-        name = (
-            cfg.get("label_ru")
-            if lang == "ru"
-            else cfg.get("label_en")
-        ) or cfg.get("label") or t(lang, "role_default_label")
-
-        desc_key = "description_ru" if lang == "ru" else "description_en"
-        desc = cfg.get(desc_key) or ""
-
-        mention = f"<@&{int(role_id)}>" if role_id else name
-        if desc:
-            lines.append(t(lang, "role_with_description").format(mention=mention, desc=desc))
-        else:
-            lines.append(mention)
-
-    return "\n".join(lines)
+    return _render_roles(defs, lang, t(lang, "no_arma_roles"))
 
 
 class PanelGamesButton(discord.ui.Button):
@@ -204,7 +189,7 @@ class RolesPanel(commands.Cog):
 
     @commands.command(name="role_panel", aliases=["post_roles"])
     @commands.has_permissions(administrator=True)
-    async def role_panel(self, ctx: commands.Context):
+    async def role_panel(self, ctx: commands.Context, lang: str | None = None):
         """
         Post the roles panel with buttons for:
         - game roles
@@ -212,12 +197,18 @@ class RolesPanel(commands.Cog):
         - register as recruit
         """
 
-        if isinstance(ctx.author, discord.Member):
-            lang = get_lang_for_member(ctx.author)
-        elif isinstance(ctx.author, discord.abc.User):
-            lang = get_lang_for_user(ctx.author)
+        # Resolve language: explicit param > member preference > default
+        if lang:
+            if lang not in LANGS:
+                await ctx.send(f"Unknown language. Use: {', '.join(LANGS.keys())}")
+                return
         else:
-            lang = getattr(Config, "DEFAULT_LANG", "en")
+            if isinstance(ctx.author, discord.Member):
+                lang = get_lang_for_member(ctx.author)
+            elif isinstance(ctx.author, discord.abc.User):
+                lang = get_lang_for_user(ctx.author)
+            else:
+                lang = getattr(Config, "DEFAULT_LANG", "en")
 
         has_games = bool(getattr(Config, "GAME_ROLE_DEFINITIONS", []) or [])
         has_arma = bool(getattr(Config, "ARMA_ROLE_DEFINITIONS", []) or [])
@@ -229,7 +220,7 @@ class RolesPanel(commands.Cog):
         embed = discord.Embed(
             title=t(lang, "role_panel_title"),
             description=t(lang, "role_panel_body"),
-            color=discord.Color.dark_gold(),
+            color=discord.Color.blurple(),
         )
 
         if has_games:

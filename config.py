@@ -51,7 +51,7 @@ class Config:
             "label_ru": t("ru", "config_game_role_arma3_label"),
             "description_en": t("en", "config_game_role_arma3_description"),
             "description_ru": t("ru", "config_game_role_arma3_description"),
-            "emoji": "🎮",
+            "emoji": "<:ARMA3:1444025332586905711>",
         },
         {
             "id": int(os.getenv("GAME_ROLE_SQUAD_ID", "0")),
@@ -59,7 +59,7 @@ class Config:
             "label_ru": t("ru", "config_game_role_squad_label"),
             "description_en": t("en", "config_game_role_squad_description"),
             "description_ru": t("ru", "config_game_role_squad_description"),
-            "emoji": "🪖",
+            "emoji": "<:SQUAD:1444025248323207330>",
         },
         {
             "id": int(os.getenv("GAME_ROLE_CSGO_ID", "0")),
@@ -67,7 +67,7 @@ class Config:
             "label_ru": t("ru", "config_game_role_csgo_label"),
             "description_en": t("en", "config_game_role_csgo_description"),
             "description_ru": t("ru", "config_game_role_csgo_description"),
-            "emoji": "🔫",
+            "emoji": "<:CSGO:1444025289708666981>",
         },
         {
             "id": int(os.getenv("GAME_ROLE_MINECRAFT_ID", "0")),
@@ -75,7 +75,7 @@ class Config:
             "label_ru": t("ru", "config_game_role_minecraft_label"),
             "description_en": t("en", "config_game_role_minecraft_description"),
             "description_ru": t("ru", "config_game_role_minecraft_description"),
-            "emoji": "⛏️",
+            "emoji": "<:MINECRAFT:1444025385754034377>",
         },
         {
             "id": int(os.getenv("GAME_ROLE_RUST_ID", "0")),
@@ -83,7 +83,7 @@ class Config:
             "label_ru": t("ru", "config_game_role_rust_label"),
             "description_en": t("en", "config_game_role_rust_description"),
             "description_ru": t("ru", "config_game_role_rust_description"),
-            "emoji": "🛠️",
+            "emoji": "<:RUST:1444025421225267230>",
         },
         # Add/edit items above as needed: id, label_en/label_ru, emoji
     ]
