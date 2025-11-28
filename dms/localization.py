@@ -793,7 +793,7 @@ LANGS = {
         "config_arma_role_at_specialist_description": (
             "Использует противотанковое оружие и поражает бронетехнику."
         ),
-        "config_arma_role_marksman_label": "Маркер / Дальний стрелок",
+        "config_arma_role_marksman_label": "Снайпер",
         "config_arma_role_marksman_description": (
             "Поражает цели на средних и дальних дистанциях с высокой точностью."
         ),
