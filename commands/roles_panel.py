@@ -67,7 +67,7 @@ class PanelGamesButton(discord.ui.Button):
         view: ServerRolesPanelView = self.view  # type: ignore
         lang = view.lang
 
-        guild = interaction.client.get_guild(view.guild_id)
+        guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
                 t(lang, "guild_not_found"),
@@ -85,7 +85,7 @@ class PanelGamesButton(discord.ui.Button):
         embed = _build_game_roles_embed(lang)
         roles_view = GameRolesView(
             bot=view.bot,
-            guild_id=view.guild_id,
+            guild_id=guild.id,
             lang=lang,
         )
 
@@ -110,7 +110,7 @@ class PanelArmaButton(discord.ui.Button):
         view: ServerRolesPanelView = self.view  # type: ignore
         lang = view.lang
 
-        guild = interaction.client.get_guild(view.guild_id)
+        guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
                 t(lang, "guild_not_found"),
@@ -149,7 +149,7 @@ class PanelArmaButton(discord.ui.Button):
         embed = _build_arma_roles_embed(lang)
         arma_view = ArmaRolesView(
             bot=view.bot,
-            guild_id=view.guild_id,
+            guild_id=guild.id,
             lang=lang,
         )
 
@@ -168,7 +168,7 @@ class ServerRolesPanelView(discord.ui.View):
     - recruit registration
     """
 
-    def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
+    def __init__(self, bot: commands.Bot, guild_id: int | None, lang: str):
         super().__init__(timeout=None)
         self.bot = bot
         self.guild_id = guild_id
@@ -186,6 +186,16 @@ class ServerRolesPanelView(discord.ui.View):
 class RolesPanel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    async def cog_load(self):
+        # Register persistent view so pinned panels keep working after restarts.
+        self.bot.add_view(
+            ServerRolesPanelView(
+                bot=self.bot,
+                guild_id=None,
+                lang=getattr(Config, "DEFAULT_LANG", "en"),
+            )
+        )
 
     @commands.command(name="role_panel", aliases=["post_roles"])
     @commands.has_permissions(administrator=True)

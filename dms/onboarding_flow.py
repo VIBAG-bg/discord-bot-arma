@@ -332,7 +332,18 @@ class RegisterRecruitButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: OnboardingMainView = self.view  # type: ignore
 
-        guild = interaction.client.get_guild(view.guild_id)
+        guild_id = getattr(view, "guild_id", None) or getattr(interaction.guild, "id", None)
+        guild = None
+        if guild_id:
+            guild = interaction.client.get_guild(guild_id) or (
+                interaction.guild if interaction.guild and interaction.guild.id == guild_id else None
+            )
+            if guild is None:
+                try:
+                    guild = await interaction.client.fetch_guild(guild_id)  # type: ignore[arg-type]
+                except discord.DiscordException:
+                    guild = None
+
         if guild is None:
             await interaction.response.send_message(
                 t(view.lang, "guild_not_found"),
