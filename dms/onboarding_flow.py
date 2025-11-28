@@ -79,7 +79,8 @@ class OnboardingMainView(discord.ui.View):
     """
 
     def __init__(self, bot: commands.Bot, guild_id: int, lang: str):
-        super().__init__(timeout=3600)
+        # Persistent during bot uptime; safe because this view holds only simple state.
+        super().__init__(timeout=None)
         self.bot = bot
         self.guild_id = guild_id
         self.lang = lang
@@ -554,17 +555,18 @@ class LanguageSelectView(discord.ui.View):
     """Language selector view shown in onboarding DMs."""
 
     def __init__(self, bot_client: commands.Bot, guild_id: int):
-        super().__init__(timeout=900)
+        # Keep active while the bot is running; state is per-user DM.
+        super().__init__(timeout=None)
         self.bot = bot_client
         self.guild_id = guild_id
-        self.add_item(LanguageButton("en", t("en", "language_name_en")))
-        self.add_item(LanguageButton("ru", t("ru", "language_name_ru")))
-        self.add_item(LanguageButton("uk", t("uk", "language_name_uk")))
+        self.add_item(LanguageButton("en", t("en", "language_name_en"), "lang_en"))
+        self.add_item(LanguageButton("ru", t("ru", "language_name_ru"), "lang_ru"))
+        self.add_item(LanguageButton("uk", t("uk", "language_name_uk"), "lang_uk"))
 
 
 class LanguageButton(discord.ui.Button):
-    def __init__(self, code: str, label: str):
-        super().__init__(label=label, style=discord.ButtonStyle.primary)
+    def __init__(self, code: str, label: str, custom_id: str):
+        super().__init__(label=label, style=discord.ButtonStyle.primary, custom_id=custom_id)
         self.code = code
 
     async def callback(self, interaction: discord.Interaction):
